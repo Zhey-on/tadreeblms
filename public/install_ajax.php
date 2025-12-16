@@ -2,11 +2,7 @@
 ob_start();
 header('Content-Type: application/json');
 
-/*
-|--------------------------------------------------------------------------
-| Base Paths
-|--------------------------------------------------------------------------
-*/
+/* Base Paths */
 $basePath = realpath(__DIR__ . '/..');
 if (!$basePath) {
     echo json_encode(['success' => false, 'message' => 'Base path not resolved']);
@@ -19,21 +15,13 @@ $migrationDoneFile = $basePath . '/.migrations_done';
 $seedDoneFile      = $basePath . '/.seed_done';
 $installedFlag     = $basePath . '/installed';
 
-/*
-|--------------------------------------------------------------------------
-| Block reinstall
-|--------------------------------------------------------------------------
-*/
+/* Block reinstall */
 if (file_exists($installedFlag) && ($_GET['step'] ?? '') !== 'check') {
     echo json_encode(['success' => false, 'message' => '❌ Application already installed']);
     exit;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Helpers
-|--------------------------------------------------------------------------
-*/
+/* Helpers */
 function fail($msg) {
     echo json_encode(['success' => false, 'message' => "❌ $msg", 'show_db_form' => false]);
     exit;
@@ -53,25 +41,17 @@ function blockIfNoVendor($basePath) {
     if (!vendorExists($basePath)) {
         echo json_encode([
             'success' => false,
-            'message' => "❌ Dependencies not installed. Run 'composer install' in Docker and retry.",
+            'message' => "❌ Dependencies not installed. Run 'composer install' and retry.",
             'next' => 'composer'
         ]);
         exit;
     }
 }
 
-/*
-|--------------------------------------------------------------------------
-| Current Step
-|--------------------------------------------------------------------------
-*/
+/* Current Step */
 $step = $_REQUEST['step'] ?? 'check';
 
-/*
-|--------------------------------------------------------------------------
-| Save DB Config
-|--------------------------------------------------------------------------
-*/
+/* Save DB Config */
 if ($step === 'db_config' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $db_host = trim($_POST['db_host'] ?? '');
     $db_database = trim($_POST['db_database'] ?? '');
@@ -94,11 +74,7 @@ if ($step === 'db_config' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Steps
-|--------------------------------------------------------------------------
-*/
+/* Steps */
 try {
     switch ($step) {
 
@@ -126,10 +102,10 @@ try {
                 }
             }
 
-            // Composer version check (inside Docker)
-            $composerVersion = shell_exec("docker exec laravel_app composer --version 2>&1");
+            // Composer version check
+            $composerVersion = shell_exec("composer --version 2>&1");
             if (!$composerVersion) {
-                $msg .= "❌ Composer not found in Docker<br>";
+                $msg .= "❌ Composer not found<br>";
                 $ok = false;
             } else {
                 $msg .= "✔ $composerVersion<br>";
@@ -145,7 +121,7 @@ try {
                 fail("Permission issue detected. Run: sudo chown -R \$USER:www-data $basePath && sudo chmod -R 775 $basePath");
             }
 
-            $cmd = "docker exec laravel_app composer install --no-interaction --prefer-dist 2>&1";
+            $cmd = "composer install --no-interaction --prefer-dist 2>&1";
             $output = shell_exec($cmd);
 
             if (!vendorExists($basePath)) {
@@ -181,14 +157,14 @@ try {
 
         case 'key':
             blockIfNoVendor($basePath);
-            exec("docker exec laravel_app php artisan key:generate --force 2>&1", $out, $ret);
+            exec("php artisan key:generate --force 2>&1", $out, $ret);
             if ($ret !== 0) fail(implode("\n", $out));
             echo json_encode(['message'=>'✔ APP_KEY generated','next'=>'migrate']);
             exit;
 
         case 'migrate':
             blockIfNoVendor($basePath);
-            exec("docker exec laravel_app php artisan migrate --force 2>&1", $out, $ret);
+            exec("php artisan migrate --force 2>&1", $out, $ret);
             if ($ret !== 0) fail(implode("\n", $out));
             file_put_contents($migrationDoneFile,'done');
             echo json_encode(['message'=>'✔ Migrations completed','next'=>'seed']);
@@ -196,7 +172,7 @@ try {
 
         case 'seed':
             blockIfNoVendor($basePath);
-            exec("docker exec laravel_app php artisan db:seed --force 2>&1", $out, $ret);
+            exec("php artisan db:seed --force 2>&1", $out, $ret);
             if ($ret !== 0) fail(implode("\n", $out));
             file_put_contents($seedDoneFile,'done');
             echo json_encode(['message'=>'✔ Database seeded','next'=>'permissions']);

@@ -1,7 +1,5 @@
-version: '3.9'
-
 services:
-  app:
+  laravel_app:
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,25 +7,36 @@ services:
     ports:
       - "8000:80"
     volumes:
-      - ./:/var/www/html
-    environment:
-      APACHE_DOCUMENT_ROOT: /var/www/html/public
+      - .:/var/www/html
     depends_on:
-      - db
+      - laravel_db
 
-  db:
+  laravel_db:
     image: mysql:8.0
     container_name: laravel_db
     restart: always
-    ports:
-      - "3306:3306"
     environment:
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: laravel
       MYSQL_USER: laravel
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: laravel
+    ports:
+      - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: laravel_phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: laravel_db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - laravel_db
 
 volumes:
   dbdata:
