@@ -32,6 +32,8 @@
             @if (null == Session::get('setvaluesession') ||
             (null !== Session::get('setvaluesession') && in_array(Session::get('setvaluesession'), [1,2,3]))
             )
+
+            @can('trainer_access')
             <li class="nav-item ">
                 <a class="nav-link {{ $request->segment(2) == 'teachers' ? 'active' : '' }}"
                     href="{{ route('admin.teachers.index') }}">
@@ -39,10 +41,12 @@
                     <span class="title">@lang('menus.backend.sidebar.trainers')</span>
                 </a>
             </li>
+            @endcan
             @endif
             @if (null == Session::get('setvaluesession') ||
             (null !== Session::get('setvaluesession') && in_array(Session::get('setvaluesession'), [1,2,3]))
             )
+            @can('trainee_access')
             <li
                 class="nav-item nav-dropdown   {{ active_class(Active::checkUriPattern(['user/employee*', 'user/external-employee*']), 'open') }}">
                 <a class="nav-link nav-dropdown-toggle d-flex  {{ active_class(Active::checkUriPattern('admin/*')) }}"
@@ -79,11 +83,13 @@
                     @endcan
                 </ul>
             </li>
+            @endcan
             @endif
 
             @if (null == Session::get('setvaluesession') ||
             (null !== Session::get('setvaluesession') && in_array(Session::get('setvaluesession'), [1,2]))
             )
+            @can('feedback_access')
             <li
                 class="nav-item nav-dropdown {{ active_class(Active::checkUriPattern(['user/employee*', 'user/external-employee*']), 'open') }}">
                 <a class="nav-link nav-dropdown-toggle d-flex {{ active_class(Active::checkUriPattern('admin/*')) }}"
@@ -125,9 +131,11 @@
                     @endcan
                 </ul>
             </li>
+            @endcan
             @endif
             @if (null == Session::get('setvaluesession') ||
             (null !== Session::get('setvaluesession') && in_array(Session::get('setvaluesession'), [1,2])))
+            @can('calender_access')
             <li class="nav-item ">
                 <a class="nav-link {{ request()->routeIs('user.calender') ? 'active' : '' }}"
                     href="{{ route('user.calender') }}">
@@ -136,6 +144,7 @@
                     <span class="title">@lang('menus.backend.sidebar.calendar')</span>
                 </a>
             </li>
+            @endcan
             @endif
 
 
@@ -182,10 +191,12 @@
             </li>
             @endif
             @endcan
-            @if ($logged_in_user->isAdmin())
+            @if ($logged_in_user->isAdmin() || $logged_in_user->hasRole('teacher'))
             @if (null == Session::get('setvaluesession') ||
             (null !== Session::get('setvaluesession') && in_array(Session::get('setvaluesession'), [1,2,3]))
             )
+
+            @can('course_access')
             <li
                 class="nav-item nav-dropdown {{ active_class(Active::checkUriPattern(['user/courses*', 'user/lessons*', 'user/tests*', 'user/live-lessons*', 'user/live-lesson-slots*']), 'open') }}">
                 <a class="nav-link nav-dropdown-toggle d-flex align-items-center {{ active_class(Active::checkUriPattern('admin/*')) }}"
@@ -242,23 +253,29 @@
                     @can('live_lesson_slot_access')
 
                     @endcan
+
+                    @can('assesment_access')
                     <li class="nav-item " style="display: none">
                         <a class="nav-link {{ $request->segment(2) == 'assessment_accounts' ? 'active' : '' }}"
                             href="{{ route('admin.assessment_accounts.index') }}">
                             <span class="title">@lang('menus.backend.sidebar.assessment_accounts')</span>
                         </a>
                     </li>
-
+                    @endcan
+                    @can('assesment_access')
                     <li class="nav-item " style="">
                         <a class="nav-link {{ request()->is('user/assignments') ? 'active' : '' }}" href="{{ url('user/assignments') }}">
                             <span class="title">@lang('menus.backend.sidebar.course_assessment')</span>
                         </a>
                     </li>
+                    @endcan
+                    @can('assesment_create')
                     <li class="nav-item " style="">
                         <a class="nav-link {{ request()->is('user/assignments/create') ? 'active' : '' }}" href="{{ url('user/assignments/create') }}">
                             <span class="title">@lang('Add Course Assessment')</span>
                         </a>
                     </li>
+                    @endcan
                     <li class="nav-item " style="display: none">
                         <a class="nav-link {{ $request->segment(2) == 'assignments' ? 'active' : '' }}"
                             href="{{ route('admin.assessment_accounts.assignments') }}">
@@ -266,20 +283,22 @@
                         </a>
                     </li>
 
+                    @can('course_assignment_access')
                     <li class="nav-item ">
                         <a class="nav-link {{ Route::is('admin.assessment_accounts.course-assign-list') ? 'active' : '' }}"
                             href="{{ route('admin.assessment_accounts.course-assign-list') }}">
                             <span class="title">@lang('menus.backend.sidebar.courses_assignments')</span>
                         </a>
                     </li>
-
+                    @endcan
+                    @can('invitation_access')
                     <li class="nav-item ">
                         <a class="nav-link {{ $request->segment(2) == 'course-invitation-list' ? 'active' : '' }}"
                             href="{{ route('admin.assessment_accounts.course-invitation-list') }}">
                             <span class="title">@lang('menus.backend.sidebar.Invitations')</span>
                         </a>
                     </li>
-
+                    @endcan
                     @if (in_array(Session::get('setvaluesession'), [3]))
 
                     <li class="nav-item ">
@@ -292,6 +311,7 @@
 
                 </ul>
             </li>
+            @endcan
             @endif
 
             @can('bundle_access')
@@ -302,6 +322,7 @@
             @endif
             @endif
             @if ($logged_in_user->isAdmin())
+            @can('learning_pathway_access')
             <li
                 class="nav-item nav-dropdown {{ active_class(Active::checkUriPattern(['user/learning-pathways', 'user/pathway-assignments', 'user/pathway-assignments/create']), 'open') }}">
                 <a class="d-flex align-items-center nav-link nav-dropdown-toggle {{ active_class(Active::checkUriPattern('admin/*')) }}"
@@ -331,6 +352,7 @@
                     </li>
                 </ul>
             </li>
+            @endcan
             @endif
 
             @if (null == Session::get('setvaluesession') ||
@@ -338,7 +360,7 @@
             )
 
             @if ($logged_in_user->isAdmin())
-
+            @can('contact_request_access')
             <li class="nav-item ">
                 <a class="nav-link {{ $request->segment(2) == 'contact-requests' ? 'active' : '' }}"
                     href="{{ route('admin.contact-requests.index') }}">
@@ -346,7 +368,8 @@
                     <span class="title">@lang('menus.backend.sidebar.Contact-Requests')</span>
                 </a>
             </li>
-
+            @endcan
+            @can('employee_request_access')
             <li class="nav-item ">
                 <a class="nav-link {{ $request->segment(2) == 'subscription' ? 'active' : '' }}"
                     href="{{ route('admin.subscription.index') }}">
@@ -354,7 +377,8 @@
                     <span class="title">@lang('menus.backend.sidebar.Employee-Requests')</span>
                 </a>
             </li>
-
+            @endcan
+            @can('reports_access')
             <li
                 class="nav-item nav-dropdown {{ active_class(Active::checkUriPattern(['user/employee*', 'user/external-employee*']), 'open') }}">
                 <a class="nav-link nav-dropdown-toggle d-flex align-items-center {{ active_class(Active::checkUriPattern('admin/*')) }}"
@@ -409,12 +433,14 @@
 
                 </ul>
             </li>
+            @endcan
             @endif
             @endif
             @if (null == Session::get('setvaluesession') ||
             (null !== Session::get('setvaluesession') && in_array(Session::get('setvaluesession'), [1])))
 
             @if ($logged_in_user->isAdmin() || $logged_in_user->hasAnyPermission(['blog_access', 'page_access', 'reason_access']))
+            @can('site_management_access')
             <li
                 class="nav-item nav-dropdown  {{ active_class(Active::checkUriPattern(['user/contact', 'user/sponsors*', 'user/testimonials*', 'user/faqs*', 'user/footer*', 'user/blogs', 'user/sitemap*']), 'open') }}">
                 <a class="nav-link nav-dropdown-toggle  d-flex {{ active_class(Active::checkUriPattern('admin/*')) }}"
@@ -461,6 +487,7 @@
                     @endcan
                     @if ($logged_in_user->isAdmin())
 
+                    
 
                     <li class="nav-item">
                         <a class="nav-link {{ $request->segment(2) == 'news' ? 'active' : '' }}"
@@ -499,6 +526,7 @@
 
 
             </li>
+            @endcan
             @else
             @can('blog_access')
             <li class="nav-item nav-dropdown ">
@@ -601,6 +629,7 @@
 
             @if (null == Session::get('setvaluesession') ||
             (null !== Session::get('setvaluesession') && Session::get('setvaluesession') == 1))
+            @can('access_management_access')
             <li
                 class="nav-item nav-dropdown {{ active_class(Active::checkUriPattern('admin/auth*'), 'open') }}">
                 <a class="nav-link nav-dropdown-toggle d-flex align-items-center {{ active_class(Active::checkUriPattern('admin/auth*')) }}"
@@ -632,8 +661,17 @@
                         </a>
                     </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link {{ $request->segment(2) == 'roles' ? 'active' : '' }}"
+                            href="{{ route('admin.roles.index') }}">
+
+                            <span class="title">@lang('menus.backend.sidebar.roles_mgt')</span>
+                        </a>
+                    </li>
+
                 </ul>
             </li>
+            @endcan
             @endif
 
             <!--==================================================================-->
@@ -641,6 +679,7 @@
 
             @if (null == Session::get('setvaluesession') ||
             (null !== Session::get('setvaluesession') && Session::get('setvaluesession') == 1))
+            @can('settings_access')
             <li class="nav-item nav-dropdown {{ active_class(Active::checkUriPattern('admin/*'), 'open') }}">
                 <a class="nav-link nav-dropdown-toggle d-flex align-items-center {{ active_class(Active::checkUriPattern('admin/settings*')) }}"
                     href="#">
@@ -686,8 +725,10 @@
 
                 </ul>
             </li>
+            @endcan
             @endif
             @if ($logged_in_user->isAdmin())
+            @can('send_email_notification_access')
             <li class="nav-item ">
                 <a class="d-flex nav-link {{ $request->segment(2) == 'send-email-notification' ? 'active' : '' }}"
                     href="{{ url('/user/send-email-notification') }}">
@@ -695,6 +736,7 @@
                     <div class="title ml-1 min-title">@lang('menus.backend.sidebar.Send-Email-Notification')</div>
                 </a>
             </li>
+            @endcan
             @endif
 
             @endif

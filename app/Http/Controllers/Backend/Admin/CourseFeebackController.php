@@ -57,10 +57,13 @@ class CourseFeebackController extends Controller
                         }
                     })
                     ->addColumn('actions', function ($single) {
+
+                        $edit_route = route('admin.course.coursefeedbackquestion.edit',[$single->id]);
+
                         $actions = '<div class="action-pill">';
-                        $actions .= '<a title="Edit" href="/user/course-feedback-questions/edit/' . $single->id . '">
-                                        <i class="fa fa-edit"></i>
-                                    </a>';
+                        // $actions .= '<a title="Edit" href="'.$edit_route.'">
+                        //                 <i class="fa fa-edit"></i>
+                        //             </a>';
                         $actions .= '<a title="Delete" href="#" 
                                         data-name="course feedback question" 
                                         data-type="delete" 
