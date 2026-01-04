@@ -6,6 +6,7 @@ use Database\Seeders\Traits\DisableForeignKeys;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Facades\DB;
 
 class PermissionRoleTableSeeder extends Seeder
 {
@@ -46,6 +47,7 @@ class PermissionRoleTableSeeder extends Seeder
             'role',
             'course',
             'lesson',
+            'question',
             'backend',
             'contact_request',
             'employee_request',
@@ -60,6 +62,14 @@ class PermissionRoleTableSeeder extends Seeder
         ];
 
         $actions = ['access', 'create', 'edit', 'view', 'delete'];
+
+        //truncate all permissions
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        DB::table('permissions')->truncate();
+        DB::table('role_has_permissions')->truncate();
+        
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         foreach ($modules as $module) {
             foreach ($actions as $action) {

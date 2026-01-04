@@ -291,7 +291,7 @@
                         </a>
                     </li>
                     @endcan
-                    @can('invitation_access')
+                    @can('course_invitation_access')
                     <li class="nav-item ">
                         <a class="nav-link {{ $request->segment(2) == 'course-invitation-list' ? 'active' : '' }}"
                             href="{{ route('admin.assessment_accounts.course-invitation-list') }}">
