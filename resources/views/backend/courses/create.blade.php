@@ -247,8 +247,8 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-12 col-lg-2 col-md-12 form-group">
-                    {!! Form::label('price', trans('labels.backend.courses.fields.price') . ' ( in SAR )', [
+                <div class="col-sm-12 col-lg-3 col-md-12 form-group">
+                    {!! Form::label('price', trans('labels.backend.courses.fields.price'), [
                         'class' => 'control-label',
                     ]) !!}
                     {!! Form::number('price', old('price'), [
@@ -487,34 +487,37 @@
 
 
         $(document).ready(function() {
-            $('#start_date').datepicker({
-                autoclose: true,
-                dateFormat: "{{ config('app.date_format_js') }}"
-            });
+    var dateToday = new Date();
 
-            var dateToday = new Date();
-            $('#expire_at').datepicker({
-                autoclose: true,
-                minDate: dateToday,
-                dateFormat: "{{ config('app.date_format_js') }}"
-            });
+    $('#start_date').datepicker({
+        autoclose: true,
+        minDate: dateToday,
+        dateFormat: "{{ config('app.date_format_js') }}"
+    });
 
-            $(".js-example-placeholder-single").select2({
-                placeholder: "{{ trans('labels.backend.courses.select_category') }}",
-            });
+    $('#expire_at').datepicker({
+        autoclose: true,
+        minDate: dateToday,
+        dateFormat: "{{ config('app.date_format_js') }}"
+    });
 
-            $(".js-example-placeholder-multiple").select2({
-                placeholder: "{{ trans('labels.backend.courses.select_teachers') }}",
-            });
+    $(".js-example-placeholder-single").select2({
+        placeholder: "{{ trans('labels.backend.courses.select_category') }}",
+    });
 
-            $(".js-example-internal-student-placeholder-multiple").select2({
-                placeholder: "{{ trans('labels.backend.courses.select_internal_students') }}",
-            });
+    $(".js-example-placeholder-multiple").select2({
+        placeholder: "{{ trans('labels.backend.courses.select_teachers') }}",
+    });
 
-            $(".js-example-external-student-placeholder-multiple").select2({
-                placeholder: "{{ trans('labels.backend.courses.select_external_students') }}",
-            });
-        });
+    $(".js-example-internal-student-placeholder-multiple").select2({
+        placeholder: "{{ trans('labels.backend.courses.select_internal_students') }}",
+    });
+
+    $(".js-example-external-student-placeholder-multiple").select2({
+        placeholder: "{{ trans('labels.backend.courses.select_external_students') }}",
+    });
+});
+
 
         var uploadField = $('input[type="file"]');
 
@@ -583,6 +586,18 @@
         });
         $(document).on('submit', '#addCourse', function(e) {
             e.preventDefault();
+            var startDateVal = $('input[name="start_date"]').val();
+            if (startDateVal) {
+                var selectedDate = new Date(startDateVal);
+                var today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (selectedDate < today) {
+                    alert('Start Date cannot be earlier than today.');
+                    return false;
+                }
+            }
+
             hrefurl = $(location).attr("href");
             last_part = hrefurl.substr(hrefurl.lastIndexOf('/') + 8)
             // alert(last_part);
