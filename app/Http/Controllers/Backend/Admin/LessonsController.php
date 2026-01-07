@@ -260,19 +260,17 @@ class LessonsController extends Controller
 
         DB::beginTransaction();
 
+        //dd($request->all());
+
         //dd($request->all(), );
 
         try {
             for ($i = 0; $i < $count; $i++) {
                 $slug = "";
                 
-                if (($request->slug[$i] == "") || $request->slug[$i] == null) {
-                    $slug = str_slug($request->title[$i]);
-                } elseif ($request->slug[$i] != null) {
-                    $slug = $request->slug[$i];
-                }
-
-                $slug = uniqid() . $slug;
+                
+                $slug = uniqid() . $request->title[$i];
+                
 
                 $slug_lesson = Lesson::where('slug', '=', $slug)->first();
                 if ($slug_lesson != null) {
@@ -417,7 +415,14 @@ class LessonsController extends Controller
                 
             }
 
-            
+            //dd();
+
+            //Update Course step
+            Course::where('id',$request->course_id)->update([
+                'current_step' => 'lesson-added'
+            ]);
+
+            //dd("kk");
 
             DB::commit();
 

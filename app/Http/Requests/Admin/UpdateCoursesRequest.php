@@ -28,7 +28,7 @@ class UpdateCoursesRequest extends FormRequest
             'title' => 'required|max:200',
             'start_date' => 'nullable|date_format:'.config('app.date_format'),
             'course_code' => 'required|max:100',
-            'arabic_title' => 'required|max:200',
+            //'arabic_title' => 'required|max:200',
         ];
     }
 }

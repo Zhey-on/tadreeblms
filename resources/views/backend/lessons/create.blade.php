@@ -157,13 +157,13 @@
             
         </div> --}}
 
-        <div class="col-12 col-lg-12 form-group">
+        {{-- <div class="col-12 col-lg-12 form-group">
                 <label for="slug" class="control-label">
                     {{ trans('labels.backend.lessons.fields.slug') }}
                 </label>
                 <input type="text" name="slug[]" value="{{ old('slug') }}" class="form-control" placeholder="{{ trans('labels.backend.lessons.slug_placeholder') }}" />
                 
-         </div>
+         </div> --}}
         </div>
 
 
@@ -316,12 +316,14 @@
 
                 <div>
                     
-                    <button type="submit" class="btn cancel-btn next frm_submit" id="nextBtn">
+
+                    <button type="submit" class="btn cancel-btn next frm_submit" id="doneBtn">
+                        Save As Draft
+                    </button>
+                    <button type="submit" class="btn add-btn" id="nextBtn">
                         Next
                     </button>
-                    <button type="submit" class="btn add-btn" id="doneBtn">
-                        Done
-                    </button>
+                    
                     <span class="loading"></span>
                 </div>
             </div>
