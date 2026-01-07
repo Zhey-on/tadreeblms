@@ -130,6 +130,14 @@
                     </div>
                 </div> --}}
 
+    <div class="pb-3 d-flex justify-content-between">
+        <h4>
+            @lang('labels.backend.access.users.management')
+            <small class="text-muted ml-3">
+                @lang('labels.backend.access.users.edit')
+            </small>
+        </h4>
+    </div>
 
             {{-- Roles --}}
             <div class="form-group row">
