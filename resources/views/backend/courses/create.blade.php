@@ -355,7 +355,7 @@
                     <input type="number" name="marks_required" class="form-control"
                         oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value > 100) this.value = 100; if(this.value < 1 && this.value != '') this.value = 1;">
                 </div>
-                <div class="col-md-12 col-lg-8 form-group" style="display:none">
+                <div class="col-md-12 col-lg-8 form-group" >
                     <div class="row">
                         <div class="col-md-12  d-flex mt-3">
                             <div class="col-md-6">
@@ -368,10 +368,11 @@
                         <div class="col-md-12 mt-3" id="lesson-module-block">
                             <div class="d-flex">
                             <div class="col-md-6">
-                            <input class="course-module-inc" id="lesson-module" disabled type="checkbox" checked name="course_module_inc[]" value="LessonModule" /> Lesson Module
+                            <input class="course-module-inc" id="lesson-module" checked
+       onclick="return false;" type="checkbox" checked name="course_module_inc[]" value="LessonModule" /> Lesson Module
                             </div>
                             <div class="col-md-6">
-                            <input type="text" class="sm-input text-end" value="" name="lesson_weight" >
+                            <input type="text" class="sm-input text-end" value="" name="course_module_weight[LessonModule]" >
                             </div>
                             </div>
                         </div>
@@ -380,7 +381,7 @@
                             <input class="course-module-inc" id="question-module" type="checkbox" checked name="course_module_inc[]" value="QuestionModule" /> Question Assesment Module 
                             </div>
                              <div class="col-md-6">
-                            <input type="text" class="sm-input text-end" value="" name="question_weight" >
+                            <input type="text" class="sm-input text-end" value="" name="course_module_weight[QuestionModule]" >
                              </div>
                         </div>
                         <div class="col-md-12 d-flex mt-3">
@@ -388,7 +389,7 @@
                         <input class="course-module-inc " type="checkbox"  id="feedbaack-module" name="course_module_inc[]" value="FeedbackModule" /> Feebback Module 
                             </div>
                          <div class="col-md-6">
-                         <input type="text" class="sm-input text-end" value="" name="feedback_weight" >
+                         <input type="text" class="sm-input text-end" value="" name="course_module_weight[FeedbackModule]" >
                          </div>
                         </div>
                     </div>

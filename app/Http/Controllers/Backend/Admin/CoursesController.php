@@ -523,7 +523,7 @@ class CoursesController extends Controller
 
     public function store(StoreCoursesRequest $request)
     {
-        //dd("yes");
+        dd($request->all());
         $media = '';
         if (!Gate::allows('course_create')) {
             return abort(401);
