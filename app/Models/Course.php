@@ -69,6 +69,13 @@ class Course extends Model
     }
 
 
+
+    public function latestModuleWeightage()
+    {
+        return $this->hasOne(CourseModuleWeightage::class)->latestOfMany();
+    }
+
+
     
     public function getCourseImageAttribute($value)
     {

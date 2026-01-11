@@ -369,19 +369,33 @@
                             <div class="d-flex">
                             <div class="col-md-6">
                             <input class="course-module-inc" id="lesson-module" checked
-       onclick="return false;" type="checkbox" checked name="course_module_inc[]" value="LessonModule" /> Lesson Module
+                                onclick="return false;" 
+                                type="checkbox" checked 
+                                name="course_module_inc[]" 
+                                value="LessonModule" />
+                                Lesson Module
                             </div>
                             <div class="col-md-6">
-                            <input type="text" class="sm-input text-end" value="" name="course_module_weight[LessonModule]" >
-                            </div>
+                            <input type="text" class="sm-input text-end" 
+                            value="" 
+                            name="course_module_weight[LessonModule]"
+                            >
+                            </div> 
                             </div>
                         </div>
                         <div class="col-md-12  d-flex mt-3">
                             <div class="col-md-6">
-                            <input class="course-module-inc" id="question-module" type="checkbox" checked name="course_module_inc[]" value="QuestionModule" /> Question Assesment Module 
+                            <input class="course-module-inc" 
+                            id="question-module" 
+                            type="checkbox" 
+                            checked 
+                            name="course_module_inc[]" 
+                            value="QuestionModule"
+                         /> Question Assesment Module 
                             </div>
                              <div class="col-md-6">
-                            <input type="text" class="sm-input text-end" value="" name="course_module_weight[QuestionModule]" >
+                            <input type="text" class="sm-input text-end" 
+                            value="" name="course_module_weight[QuestionModule]" >
                              </div>
                         </div>
                         <div class="col-md-12 d-flex mt-3">
@@ -533,32 +547,42 @@
         })
 
 
-        $(document).on('change', '.course-type', function() {
-            if ($(this).val()) {
-                //console.log($(this).val())
-                if ($(this).val() == 'Live-Classroom') {
-                   $('#e-learning').hide();
-                   $('#live-online').hide();
-                   $('#live-classroom').show();
+       $(document).on('change', '.course-type', function () {
+    const type = $(this).val();
 
-                   $('#lesson-module-block').hide();
+    if (type === 'Live-Classroom') {
+        $('#e-learning').hide();
+        $('#live-online').hide();
+        $('#live-classroom').show();
 
-                } else if($(this).val() == 'Offline') {
-                    $('#e-learning').hide();
-                   $('#live-online').show();
-                   $('#live-classroom').hide();
-                   $('#lesson-module-block').hide();
-                } else {
-                   $('#e-learning').show();
-                   $('#live-online').hide();
-                   $('#live-classroom').hide();
-                   $('#lesson-module-block').show();
-                }
+        $('#lesson-module-block')
+            .hide()
+            .find('input')
+            .prop('disabled', true);
 
-                
+    } else if (type === 'Offline') {
+        $('#e-learning').hide();
+        $('#live-online').show();
+        $('#live-classroom').hide();
 
-            }
-        })
+        $('#lesson-module-block')
+            .hide()
+            .find('input')
+            .prop('disabled', true);
+
+    } else {
+        // E-Learning
+        $('#e-learning').show();
+        $('#live-online').hide();
+        $('#live-classroom').hide();
+
+        $('#lesson-module-block')
+            .show()
+            .find('input')
+            .prop('disabled', false);
+    }
+});
+
 
         $(document).on('change', '#media_type', function() {
             if ($(this).val()) {

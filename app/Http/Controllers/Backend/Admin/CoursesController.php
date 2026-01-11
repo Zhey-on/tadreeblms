@@ -20,7 +20,7 @@ use App\Http\Requests\Admin\UpdateCoursesRequest;
 use App\Http\Controllers\Traits\FileUploadTrait;
 use Yajra\DataTables\Facades\DataTables;
 use App\Helpers\CustomHelper;
-use App\Models\{Assignment, courseAssignment, CourseAssignmentToUser, CourseFeedback, Department};
+use App\Models\{Assignment, courseAssignment, CourseAssignmentToUser, CourseFeedback, CourseModuleWeightage, Department};
 use App\Models\Stripe\SubscribeCourse;
 use App\Jobs\SendEmailJob;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -523,7 +523,7 @@ class CoursesController extends Controller
 
     public function store(StoreCoursesRequest $request)
     {
-        dd($request->all());
+        //dd($request->all());
         $media = '';
         if (!Gate::allows('course_create')) {
             return abort(401);
@@ -705,6 +705,23 @@ class CoursesController extends Controller
                 $course->save();
             }
 
+            //save course weitage
+
+            $course_module_weight = $request->course_module_weight ?? [];
+            $last_module_array = $request->course_module_inc ?? ['QuestionModule'];
+
+            $last_module = end($last_module_array);
+
+            CourseModuleWeightage::create(
+                [
+                    'course_id' => $course->id,
+                    'minimun_qualify_marks' => $request->marks_required ?? 100,
+                    'weightage' => json_encode($course_module_weight),
+                    'last_module' => $last_module
+                ]
+            );
+
+            //dd("jj");
 
             $teachers = \Auth::user()->isAdmin() ? array_filter((array)$request->input('teachers')) : [\Auth::user()->id];
 
@@ -784,7 +801,8 @@ class CoursesController extends Controller
 
         $already_assigned_internal_users = SubscribeCourse::where('course_id', $id)->get()->pluck('user_id');
 
-        $course = Course::findOrFail($id);
+        $course = Course::with('latestModuleWeightage')->findOrFail($id);
+        //dd($course);
 
         return view('backend.courses.edit', compact('already_assigned_internal_users', 'internalStudents', 'externalStudents', 'course', 'teachers', 'categories', 'departments'));
     }

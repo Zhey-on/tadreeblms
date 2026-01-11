@@ -350,63 +350,80 @@
             </div>
 
             <div class="row mt-4">
-                <div class="col-sm-12 col-lg-4 col-md-12">
-                    <label for="control-label">@lang('Minimum percentage required to qualify')</label>
-                    <input type="number" name="marks_required" class="form-control"
-                        oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value > 100) this.value = 100; if(this.value < 1 && this.value != '') this.value = 1;">
-                </div>
-                <div class="col-md-12 col-lg-8 form-group" style="display:none">
-                    <div class="row">
-                        <div class="col-md-12  d-flex mt-3">
-                            <div class="col-md-6">
-                            <strong> Need to Included</strong>
-                            </div>
-                             <div class="col-md-6">
-                            <strong>Module Weightage (total should be 100%)</strong>
-                             </div>
-                        </div>
-                        <div class="col-md-12 mt-3" id="lesson-module-block">
-                            <div class="d-flex">
-                            <div class="col-md-6">
-                            <input class="course-module-inc" id="lesson-module" disabled type="checkbox" checked name="course_module_inc[]" value="LessonModule" /> Lesson Module
-                            </div>
-                            <div class="col-md-6">
-                            <input type="text" class="sm-input text-end" value="" name="lesson_weight" >
-                            </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12  d-flex mt-3">
-                            <div class="col-md-6">
-                            <input class="course-module-inc" id="question-module" type="checkbox" checked name="course_module_inc[]" value="QuestionModule" /> Question Assesment Module 
-                            </div>
-                             <div class="col-md-6">
-                            <input type="text" class="sm-input text-end" value="" name="question_weight" >
-                             </div>
-                        </div>
-                        <div class="col-md-12 d-flex mt-3">
-                            <div class="col-md-6">
-                        <input class="course-module-inc " type="checkbox"  id="feedbaack-module" name="course_module_inc[]" value="FeedbackModule" /> Feebback Module 
-                            </div>
-                         <div class="col-md-6">
-                         <input type="text" class="sm-input text-end" value="" name="feedback_weight" >
-                         </div>
-                        </div>
+    <div class="col-sm-12 col-lg-4 col-md-12">
+        <label>@lang('Minimum percentage required to qualify')</label>
+        <input type="number"
+               name="marks_required"
+               value="{{ $course?->latestModuleWeightage?->minimun_qualify_marks ?? '' }}"
+               class="form-control"
+               oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value>100)this.value=100;">
+    </div>
+
+    <div class="col-md-12 col-lg-8 form-group">
+        <div class="row">
+
+            <div class="col-md-12 d-flex mt-3">
+                <div class="col-md-6"><strong>Need to Included</strong></div>
+                <div class="col-md-6"><strong>Module Weightage (total 100%)</strong></div>
+            </div>
+
+            <!-- Lesson Module -->
+            <div class="col-md-12 mt-3" id="lesson-module-block">
+                <div class="d-flex">
+                    <div class="col-md-6">
+                        <input type="checkbox"
+                               checked
+                               disabled
+                               class="course-module-inc"
+                               value="LessonModule">
+                        Lesson Module
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text"
+                               class="sm-input text-end"
+                               name="course_module_weight[LessonModule]"
+                               value="{{ $weights['LessonModule'] ?? '' }}">
                     </div>
                 </div>
-                {{-- <span class="course-type-desc">
-                    <span id="e-learning">
-                        E-Learning type course is a course which can be taken online.
-                    </span>
-                    <span id="live-online" style="display: none;">
-                        Live-Online type course is a course can be done on goole meet/Zoom link.
-                    </span>
-                    <span id="live-classroom" style="display: none;">
-                        Live-Classroom type course is a course can be happen on a specific classroom location.
-                    </span>
-                </span> --}}
-
-                
             </div>
+
+            <!-- Question Module -->
+            <div class="col-md-12 d-flex mt-3">
+                <div class="col-md-6">
+                    <input type="checkbox"
+                           checked
+                           disabled
+                           value="QuestionModule">
+                    Question Assessment Module
+                </div>
+                <div class="col-md-6">
+                    <input type="text"
+                           class="sm-input text-end"
+                           name="course_module_weight[QuestionModule]"
+                           value="{{ $weights['QuestionModule'] ?? '' }}">
+                </div>
+            </div>
+
+            <!-- Feedback Module -->
+            <div class="col-md-12 d-flex mt-3">
+                <div class="col-md-6">
+                    <input type="checkbox"
+                           disabled
+                           value="FeedbackModule">
+                    Feedback Module
+                </div>
+                <div class="col-md-6">
+                    <input type="text"
+                           class="sm-input text-end"
+                           name="course_module_weight[FeedbackModule]"
+                           value="{{ $weights['FeedbackModule'] ?? '' }}">
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 
             
 
@@ -582,6 +599,39 @@
             }
         })
     </script>
+<script>
+function toggleCourseWeightage(type) {
+
+    // lesson module logic
+    if (type === 'Online') {
+        $('#lesson-module-block')
+            .show()
+            .find('input')
+            .prop('disabled', false);
+    } else {
+        $('#lesson-module-block')
+            .hide()
+            .find('input')
+            .prop('disabled', true);
+    }
+
+    // course description
+    $('#e-learning').toggle(type === 'Online');
+    $('#live-online').toggle(type === 'Offline');
+    $('#live-classroom').toggle(type === 'Live-Classroom');
+}
+
+// change event
+$(document).on('change', '.course-type', function () {
+    toggleCourseWeightage($(this).val());
+});
+
+// EDIT PAGE LOAD FIX (IMPORTANT)
+$(document).ready(function () {
+    let selectedType = $('input[name="course_type"]:checked').val();
+    toggleCourseWeightage(selectedType);
+});
+</script>
 
     <script>
         var nxt_url_val = '';
