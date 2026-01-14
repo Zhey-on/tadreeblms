@@ -318,8 +318,15 @@
             fetch(refreshCaptchaUrl)
                 .then(res => res.json())
                 .then(data => {
-                    document.getElementById('login-captcha-question').innerText =
+                    if(mode == 'login') {
+                        document.getElementById('login-captcha-question').innerText =
                         data.captcha_question;
+                    }
+                    if(mode == 'register') {
+                        //alert("hi")
+                        document.getElementById('register-captcha-question').innerText =
+                        data.captcha_question;
+                    }
                 });
         }
 
