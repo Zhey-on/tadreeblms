@@ -26,8 +26,8 @@ class UserTableSeeder extends Seeder
         User::create([
             'first_name'        => 'Admin',
             'last_name'         => 'Istrator',
-            'email'             => 'admin@seeder.com',
-            'password'          => 'secret',
+            'email'             => 'demo@tadreeblms.com',
+            'password'          => 'demo12345',
             'confirmation_code' => md5(uniqid(mt_rand(), true)),
             'confirmed'         => true,
         ]);
