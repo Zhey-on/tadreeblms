@@ -5,6 +5,8 @@
 /vendor/
 /node_modules/
 
+/ldap
+
 .composer/
 /installed
 README.md
