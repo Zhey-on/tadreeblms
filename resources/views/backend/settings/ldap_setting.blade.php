@@ -12,6 +12,12 @@
             width: 8%;
         }
 
+        .error{
+            margin-top: 5px;
+            color: green;
+            font-weight: bold;
+        }
+
         @media screen and (max-width: 768px) {
             .color-list li {
                 width: 20%;
@@ -107,458 +113,91 @@
                     <div class="row mt-4 mb-4">
                         <div class="col">
 
-                            <!-- App Name -->
-                            <div class="form-group row">
-                                <label for="app_name" class="col-md-4 form-control-label">
-                                    {{ 'LDAP Setting Test Connection' }}
-                                </label>
-                                <div class="col-md-8">
-                                    <form method="POST"
-                                        action="{{ route('admin.ldap-settings') }}"
-                                        id="landing-general-settings-form"
-                                        class="form-horizontal">
-                                        @csrf
-                                        
+                            <form method="POST"
+                                action="{{ route('admin.ldap-settings') }}"
+                                id="landing-general-settings-form"
+                                class="form-horizontal">
+                                @csrf
+
+                                <div class="form-group row">
+                                    <label class="col-md-4">Enable LDAP</label>
+                                    <div class="col-md-8">
                                         <label class="switch switch-lg switch-3d switch-primary">
                                             <input type="checkbox"
-                                                id="landing_page_toggle"
                                                 class="switch-input"
                                                 name="ldap_toggle"
                                                 value="1"
-                                                {{ $ldap_toggle == 1 ? 'checked' : '' }}
-                                                onchange="this.form.submit();">
+                                                {{ $ldap_toggle == 1 ? 'checked' : '' }}>
                                             <span class="switch-label"></span>
                                             <span class="switch-handle"></span>
                                         </label>
-
-                                        @if($ldap_toggle && $ldap_connected)
-                                            <span>{{ 'LDAP Connected Successfully' }}</span>
-                                        @elseif($ldap_toggle && $ldap_connected == 0) 
-                                            <span>{{ 'LDAP Failed to Connect' }}</span>
-                                        @endif
-
-                                    </form>
-                                </div>
-                            </div>
-
-
-                        </div>
-                    </div>
-                </div>
-
-
-                
-
-                <!---Layout Tab--->
-                <div id="footer-section" class="tab-pane container fade">
-                   <form method="POST" action="{{ route('admin.general-settings') }}" 
-                        id="general-settings-form" 
-                        class="form-horizontal" 
-                        enctype="multipart/form-data">
-                    @csrf
-
-                    <div class="pb-3">
-                        <h4 class="page-title d-inline">@lang('labels.backend.general_settings.footer.title')</h4>
-                    </div>
-
-                    <div class="card">
-
-                        <div class="card-body" id="footer">
-
-                            <input type="hidden" id="footer_data" name="footer_data">
-
-                            {{-- Short Description --}}
-                            <div class="form-group row">
-                                <label class="col-md-2 form-control-label" for="short_description">
-                                    {{ __('labels.backend.general_settings.footer.short_description') }}
-                                </label>
-
-                                <div class="col-md-8">
-                                    <textarea id="short_description" 
-                                            name="short_description" 
-                                            class="form-control"
-                                            placeholder="{{ __('labels.backend.general_settings.footer.short_description') }}"></textarea>
+                                    </div>
                                 </div>
 
-                                <div class="col-md-2">
-                                    <p style="line-height: 35px">
-                                        <span class="mr-2">{{ __('labels.backend.general_settings.contact.show') }}</span>
-                                        <label class="switch switch-sm switch-3d switch-primary">
-                                            <input type="checkbox" class="switch-input status" checked value="1">
-                                            <span class="switch-label"></span><span class="switch-handle"></span>
-                                        </label>
-                                    </p>
-                                </div>
-                            </div>
+                                <hr>
 
-                            {{-- Footer Sections (1 to 3) --}}
-                            @for($i=1; $i<=3; $i++)
                                 <div class="form-group row">
-                                    
-                                    <label class="col-md-2 form-control-label">
-                                        {{ __('labels.backend.general_settings.footer.section_'.$i) }}
-                                    </label>
-
-                                    <div class="col-md-8 options">
-                                        <div class="row">
-
-                                            {{-- Radio 1 --}}
-                                            <div class="col-4">
-                                                <label class="switch switch-sm switch-3d switch-success">
-                                                    <input type="radio" name="section{{ $i }}" value="1" checked class="switch-input section{{ $i }}">
-                                                    <span class="switch-label"></span><span class="switch-handle"></span>
-                                                </label>
-                                                <span class="ml-2 title">{{ __('labels.backend.general_settings.footer.popular_categories') }}</span>
-                                            </div>
-
-                                            {{-- Radio 2 --}}
-                                            <div class="col-4">
-                                                <label class="switch switch-sm switch-3d switch-success">
-                                                    <input type="radio" name="section{{ $i }}" value="2" class="switch-input section{{ $i }}">
-                                                    <span class="switch-label"></span><span class="switch-handle"></span>
-                                                </label>
-                                                <span class="ml-2 title">{{ __('labels.backend.general_settings.footer.featured_courses') }}</span>
-                                            </div>
-
-                                            {{-- Radio 3 --}}
-                                            <div class="col-4">
-                                                <label class="switch switch-sm switch-3d switch-success">
-                                                    <input type="radio" name="section{{ $i }}" value="3" class="switch-input section{{ $i }}">
-                                                    <span class="switch-label"></span><span class="switch-handle"></span>
-                                                </label>
-                                                <span class="ml-2 title">{{ __('labels.backend.general_settings.footer.trending_courses') }}</span>
-                                            </div>
-
-                                            {{-- Radio 4 --}}
-                                            <div class="col-4 mt-2">
-                                                <label class="switch switch-sm switch-3d switch-success">
-                                                    <input type="radio" name="section{{ $i }}" value="4" class="switch-input section{{ $i }}">
-                                                    <span class="switch-label"></span><span class="switch-handle"></span>
-                                                </label>
-                                                <span class="ml-2 title">{{ __('labels.backend.general_settings.footer.popular_courses') }}</span>
-                                            </div>
-
-                                            {{-- Custom Links --}}
-                                            <div class="col-4 mt-2">
-                                                <label class="switch switch-sm switch-3d switch-success">
-                                                    <input type="radio" name="section{{ $i }}" value="5" class="switch-input custom_links section{{ $i }}">
-                                                    <span class="switch-label"></span><span class="switch-handle"></span>
-                                                </label>
-                                                <span class="ml-2 title">{{ __('labels.backend.general_settings.footer.custom_links') }}</span>
-                                            </div>
-
-                                        </div>
+                                    <label class="col-md-4">LDAP Host</label>
+                                    <div class="col-md-8">
+                                        <input type="text" name="ldap_host" class="form-control"
+                                            value="{{ $ldap_host ?? '127.0.0.1' }}">
                                     </div>
+                                </div>
 
-                                    <div class="col-md-2">
-                                        <p style="line-height: 35px">
-                                            <span class="mr-2">{{ __('labels.backend.general_settings.contact.show') }}</span>
-                                            <label class="switch switch-sm switch-3d switch-primary">
-                                                <input type="checkbox" class="switch-input status" checked value="1">
-                                                <span class="switch-label"></span><span class="switch-handle"></span>
-                                            </label>
-                                        </p>
+                                <div class="form-group row">
+                                    <label class="col-md-4">LDAP Port</label>
+                                    <div class="col-md-8">
+                                        <input type="text" name="ldap_port" class="form-control"
+                                            value="{{ $ldap_port ?? '389' }}">
                                     </div>
-
-                                    <div class="col-10 offset-2 button-container"></div>
-
-                                </div>
-                            @endfor
-
-
-                            {{-- Social Links --}}
-                            <div class="form-group row">
-                                <label class="col-md-2 form-control-label">
-                                    {{ __('labels.backend.general_settings.footer.social_links') }}
-                                </label>
-
-                                <div class="col-md-4 my-1">
-                                    <input type="text" id="social_link_url" class="form-control"
-                                        placeholder="{{ __('labels.backend.general_settings.footer.link_url') }}">
-                                    <span class="error text-danger"></span>
                                 </div>
 
-                                <div class="col-md-2 my-1">
-                                    <button type="button" id="icon" class="btn btn-default border btn-block"></button>
+                                <div class="form-group row">
+                                    <label class="col-md-4">Base DN</label>
+                                    <div class="col-md-8">
+                                        <input type="text" name="ldap_base_dn" class="form-control"
+                                            value="{{ $ldap_base_dn ?? 'dc=mycompany,dc=local' }}">
+                                    </div>
                                 </div>
 
-                                <div class="col-md-2 my-1">
-                                    <button type="button" class="btn btn-light add-social-link border btn-block">
-                                        {{ trans('strings.backend.general.app_add') }} <i class="fa fa-plus"></i>
-                                    </button>
+                                <div class="form-group row">
+                                    <label class="col-md-4">Admin Username (Bind DN)</label>
+                                    <div class="col-md-8">
+                                        <input type="text" name="ldap_username" class="form-control"
+                                            value="{{ $ldap_username ?? 'cn=admin,dc=mycompany,dc=local' }}">
+                                    </div>
                                 </div>
 
-                                <div class="col-md-2 my-1">
-                                    <label class="switch switch-sm switch-3d switch-primary">
-                                        <input type="checkbox" class="switch-input status" checked value="1">
-                                        <span class="switch-label"></span><span class="switch-handle"></span>
-                                    </label>
+                                <div class="form-group row">
+                                    <label class="col-md-4">Admin Password</label>
+                                    <div class="col-md-8">
+                                        <input type="password" name="ldap_password" class="form-control"
+                                            value="{{ $ldap_password ?? '' }}">
+                                    </div>
                                 </div>
 
-                                <div class="col-md-10 offset-2">
-                                    <p class="font-italic">{!! __('labels.backend.general_settings.footer.social_links_note') !!}</p>
-                                </div>
-
-                                <div class="col-md-8 offset-2 social-links-container"></div>
-                            </div>
-
-
-                            {{-- Newsletter --}}
-                            <div class="form-group row">
-                                <label class="col-md-2 form-control-label">
-                                    {{ __('labels.backend.general_settings.footer.newsletter_form') }}
-                                </label>
-
-                                <div class="col-md-2">
-                                    <label class="switch switch-sm switch-3d switch-primary">
-                                        <input type="checkbox" class="switch-input newsletter-form status" checked value="1">
-                                        <span class="switch-label"></span><span class="switch-handle"></span>
-                                    </label>
-                                </div>
-                            </div>
-
-
-                            {{-- Bottom Footer --}}
-                            <div class="form-group row">
-                                <label class="col-md-2 form-control-label">
-                                    {{ __('labels.backend.general_settings.footer.bottom_footer') }}
-                                </label>
-
-                                <div class="col-md-10">
-                                    <label class="switch switch-sm switch-3d switch-primary">
-                                        <input type="checkbox" class="switch-input bottom-footer status" checked value="1">
-                                        <span class="switch-label"></span><span class="switch-handle"></span>
-                                    </label>
-                                    <span class="ml-3 font-italic">{{ __('labels.backend.general_settings.footer.bottom_footer_note') }}</span>
-                                </div>
-                            </div>
-
-
-                            {{-- Copyright --}}
-                            <div class="form-group row">
-                                <label class="col-md-2 form-control-label" for="copyright_text">
-                                    {{ __('labels.backend.general_settings.footer.copyright_text') }}
-                                </label>
-
-                                <div class="col-md-8">
-                                    <input type="text" id="copyright_text" 
-                                        class="form-control"
-                                        placeholder="{{ __('labels.backend.general_settings.footer.copyright_text') }}">
-                                </div>
-
-                                <div class="col-md-2">
-                                    <label class="switch switch-sm switch-3d switch-primary">
-                                        <input type="checkbox" class="switch-input status" checked value="1">
-                                        <span class="switch-label"></span><span class="switch-handle"></span>
-                                    </label>
-                                </div>
-                            </div>
-
-
-                            {{-- Footer Links --}}
-                            <div class="form-group row">
-                                <label class="col-md-2 form-control-label">
-                                    {{ __('labels.backend.general_settings.footer.footer_links') }}
-                                </label>
-
-                                <div class="col-md-4 my-1">
-                                    <input type="text" id="footer_link_url" class="form-control"
-                                        placeholder="{{ __('labels.backend.general_settings.footer.link_url') }}">
-                                    <span class="error text-danger"></span>
-                                </div>
-
-                                <div class="col-md-2 my-1">
-                                    <input type="text" id="footer_link_label" class="form-control"
-                                        placeholder="{{ __('labels.backend.general_settings.footer.link_label') }}">
-                                </div>
-
-                                <div class="col-md-2 my-1">
-                                    <button type="button" class="btn btn-light btn-block add-footer-link border">
-                                        {{ trans('strings.backend.general.app_add') }} <i class="fa fa-plus"></i>
-                                    </button>
-                                </div>
-
-                                <div class="col-md-2 my-1">
-                                    <label class="switch switch-sm switch-3d switch-primary">
-                                        <input type="checkbox" class="switch-input status" checked value="1">
-                                        <span class="switch-label"></span><span class="switch-handle"></span>
-                                    </label>
-                                </div>
-
-                                <div class="col-md-8 offset-2 footer-links-container"></div>
-
-                            </div>
-
-                        </div>
-
-                        {{-- Footer Submit --}}
-                        <div class="row p-3">
-                            <div class="col">
-                                <a href="{{ route('admin.general-settings') }}" class="btn btn-secondary">
-                                    {{ __('buttons.general.cancel') }}
-                                </a>
-                            </div>
-
-                            <div class="col text-right">
-                                <button type="submit" id="submit" class="btn btn-primary">
-                                    {{ __('buttons.general.crud.update') }}
+                                <button type="button" id="saveLdapBtn" class="btn btn-primary mt-3">
+                                    Save Configuration
                                 </button>
+
+                                <div id="ldapStatusMsg" class=" error"></div>
+
+                            </form>
+                            <br>
+                            <hr>
+                            <div class="mt-20">
+                            <h3>Test LDAP Connection</h3>
+                            <form>
+                                <button type="button" id="test_ldap_connection" class="btn btn-primary mt-3">
+                                    Test LDAP Connection
+                                </button>
+                                <div id="ldapStatus" class="error"></div>
+                            </form>
                             </div>
-                        </div>
-
-                    </div>
-
-                    </form>
-                </div>
-
-
-                <!---MENU Tab--->
-                <div id="menu-section" class="tab-pane container fade">
-                    <div class="card">
-                        <div class="card-body">
-                            @if(isset($menu))
-                                {!! Menu::render()->with(['menu' => $menu,'menu_list' => $menu_list,'pages' =>$pages]) !!}
-                            @else
-                                {!! Menu::render()->with(['menu_list' => $menu_list]) !!}
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
-                <!---Hero Slider Tab--->
-                <div id="slider-section" class="tab-pane container fade">
-                    <div class="pb-3 d-flex justify-content-between align-items-center">
-                        <h4>@lang('labels.backend.hero_slider.title')</h4>
-                        <div>
-                            <a href="{{ route('admin.sliders.create') }}" class="add-btn">
-                                @lang('strings.backend.general.app_add_new')
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table id="myTable" class="table custom-teacher-table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>@lang('labels.general.sr_no')</th>
-                                            <th>ID</th>
-                                            <th>@lang('labels.backend.hero_slider.fields.name')</th>
-                                            <th>@lang('labels.backend.hero_slider.fields.bg_image')</th>
-                                            <th>@lang('labels.backend.hero_slider.fields.sequence')</th>
-                                            <th>@lang('labels.backend.hero_slider.fields.status')</th>
-                                            <th class="text-center">@lang('strings.backend.general.actions')</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        @foreach($slides_list as $key => $item)
-                                        <tr>
-                                            <td>{{ $loop->iteration }}</td>
-
-                                            <td>{{ $item->id }}</td>
-
-                                            <td>{{ $item->name }}</td>
-
-                                            <td>
-                                                <img src="{{ asset('storage/uploads/'.$item->bg_image) }}" height="50">
-                                            </td>
-
-                                            <td>{{ $item->sequence }}</td>
-
-                                            <td>
-                                                <div class="custom-control custom-switch">
-                                                    <input type="checkbox"
-                                                        class="custom-control-input status-toggle"
-                                                        id="switch{{ $item->id }}"
-                                                        data-id="{{ $item->id }}"
-                                                        value="1"
-                                                        {{ $item->status ? 'checked' : '' }}>
-                                                    <label class="custom-control-label"
-                                                        for="switch{{ $item->id }}">
-                                                    </label>
-                                                </div>
-                                            </td>
-
-                                            <td class="text-center">
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm p-1" type="button"
-                                                        id="actionDropdown{{ $item->id }}"
-                                                        data-toggle="dropdown">
-                                                        <i class="fas fa-ellipsis-v text-muted"></i>
-                                                    </button>
-
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a href="{{ route('admin.sliders.edit', $item->id) }}" class="dropdown-item">
-                                                            Edit
-                                                        </a>
-
-                                                        <a class="dropdown-item" style="cursor:pointer;"
-                                                            onclick="$(this).find('form').submit();">
-                                                            Delete
-                                                            <form action="{{ route('admin.sliders.destroy', $item->id) }}"
-                                                                method="POST" style="display:none">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                            </form>
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Sequence Section --}}
-                    <div class="pb-3">
-                        <h4>@lang('labels.backend.hero_slider.manage_sequence')</h4>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-body">
-
-                            @if(count($slides_list))
-                            <div class="row justify-content-center">
-                                <div class="col-md-6">
-
-                                    <h4>@lang('labels.backend.hero_slider.sequence_note')</h4>
-
-                                    <ul class="sorter list-unstyled">
-                                        @foreach($slides_list as $item)
-                                        <li class="mb-2">
-                                            <span data-id="{{ $item->id }}"
-                                                data-sequence="{{ $item->sequence }}"
-                                                class="d-block p-2 bg-light border rounded">
-                                                <span class="ml-2">{{ $item->name }}</span>
-                                            </span>
-                                        </li>
-                                        @endforeach
-                                    </ul>
-
-                                    <div class="d-flex justify-content-between mt-3">
-
-                                        <a href="{{ route('admin.courses.index') }}" class="cancel-btn">
-                                            @lang('strings.backend.general.app_back_to_list')
-                                        </a>
-
-                                        <a href="#" id="save_timeline" class="add-btn">
-                                            @lang('labels.backend.hero_slider.save_sequence')
-                                        </a>
-
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
 
                         </div>
                     </div>
+
                 </div>
 
             </div>
@@ -571,22 +210,62 @@
 @push('after-scripts')
     <script src="{{ asset('plugins/bootstrap-iconpicker/js/bootstrap-iconpicker.bundle.min.js') }}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            let submitting = false;
+    $('#saveLdapBtn').click(function() {
 
-            const toggle = document.getElementById('landing_page_toggle');
-            const form   = document.getElementById('landing-general-settings-form');
+        let formData = {
+            _token: "{{ csrf_token() }}",
+            ldap_toggle: $('input[name="ldap_toggle"]').is(':checked') ? 1 : 0,
+            ldap_host: $('input[name="ldap_host"]').val(),
+            ldap_port: $('input[name="ldap_port"]').val(),
+            ldap_base_dn: $('input[name="ldap_base_dn"]').val(),
+            ldap_username: $('input[name="ldap_username"]').val(),
+            ldap_password: $('input[name="ldap_password"]').val(),
+        };
 
-            if (toggle && form) {
-                toggle.addEventListener('change', function () {
-                    if (submitting) return;
-                    submitting = true;
-                    form.submit();
-                });
+        
+
+        // STEP 1: Save to .env
+        $.post("{{ route('admin.ldap.save.env') }}", formData, function(res) {
+
+            
+            if (res.status === 'success') {
+                $('#ldapStatusMsg').html('<span class="text-success">' + res.message + '</span>');
+            } else {
+                $('#ldapStatusMsg').html('<span class="text-danger">' + res.message + '</span>');
             }
+
         });
-    </script>
-    <script>
+    });
+
+    $('#test_ldap_connection').click(function() {
+
+        let formData = {
+            _token: "{{ csrf_token() }}",
+            ldap_toggle: $('input[name="ldap_toggle"]').is(':checked') ? 1 : 0,
+            ldap_host: $('input[name="ldap_host"]').val(),
+            ldap_port: $('input[name="ldap_port"]').val(),
+            ldap_base_dn: $('input[name="ldap_base_dn"]').val(),
+            ldap_username: $('input[name="ldap_username"]').val(),
+            ldap_password: $('input[name="ldap_password"]').val(),
+        };
+
+        // STEP 1: Save to .env
+        $.post("{{ route('admin.ldap.test') }}", formData, function(res) {
+
+            if (res.status === 'connected') {
+                $('#ldapStatus').html('<span class="text-success">' + res.message + '</span>');
+            } else {
+                $('#ldapStatus').html('<span class="text-danger">' + res.message + '</span>');
+            }
+
+        });
+    });
+
+    
+
+
+
+
         $(document).ready(function() {
 
 

@@ -20,7 +20,9 @@ use App\Models\AdminMenuItem;
 use App\Models\Slider;
 use Harimayco\Menu\Models\Menus;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use LdapRecord\Container;
+
 class ConfigController extends Controller
 {
     use FileUploadTrait;
@@ -78,16 +80,16 @@ class ConfigController extends Controller
                 \Log::info($e->getMessage());
             }
         }
-        
+
         $request = $this->saveFilesOptimize($request);
 
         //dd($request->site_logo);
 
-        
+
         $config = Config::firstOrCreate(['key' => 'site_logo']);
         $config->value = $request->site_logo;
         $config->save();
-                
+
 
         $switchInputs = ['access_registration', 'mailchimp_double_opt_in', 'access_users_change_email', 'access_users_confirm_email', 'access_captcha_registration', 'access_users_requires_approval', 'services__stripe__active', 'paypal__active', 'payment_offline_active', 'backup__status', 'access__captcha__registration', 'retest', 'lesson_timer', 'show_offers', 'onesignal_status', 'access__users__registration_mail', 'access__users__order_mail', 'services__instamojo__active', 'services__razorpay__active', 'services__cashfree__active', 'services__payu__active', 'flutter__active'];
 
@@ -103,14 +105,14 @@ class ConfigController extends Controller
             if ($key === '_token') {
                 continue;
             }
-            
+
             $key = str_replace('__', '.', $key);
             $lang = request()->lang ?? 'en';
             $config = Config::firstOrCreate(['key' => $key, 'lang' => $lang]);
             $config->value = $value;
             $config->save();
 
-                
+
 
             if ($key === 'app.locale') {
                 Locale::where('short_name', '!=', $value)->update(['is_default' => 0]);
@@ -118,7 +120,6 @@ class ConfigController extends Controller
                 $locale->is_default = 1;
                 $locale->save();
             }
-            
         }
 
         //dd($requests);
@@ -129,15 +130,15 @@ class ConfigController extends Controller
     public function saveLandingPageGeneralSettings(Request $request)
     {
         //dd($request->all());
-       
-        
+
+
         $value = $request->has('landing_page_toggle') ? 1 : 0;
 
         Config::updateOrCreate(
             ['key' => 'landing_page_toggle'],
             ['value' => $value]
         );
-            
+
 
         return back()->withFlashSuccess(__('alerts.backend.general.updated'));
     }
@@ -169,7 +170,7 @@ class ConfigController extends Controller
             $our_mission = Config::create(['key' => 'our_mission', 'lang' => 'ar']);
         }
 
-         $menu = Null;
+        $menu = Null;
         $menu_data = Null;
         if ($request->menu) {
             $menu = Menus::find($request->menu);
@@ -182,98 +183,144 @@ class ConfigController extends Controller
 
         $pages = Page::where('published', '=', 1)->get();
 
-        $slides_list = Slider::OrderBy('sequence','asc')->get();
+        $slides_list = Slider::OrderBy('sequence', 'asc')->get();
 
-        return view('backend.settings.landing_page_setting', compact('landing_page_toggle','slides_list','menu', 'menu_data', 'menu_list', 'pages','logo_data', 'sections', 'footer_data', 'app_locales', 'api_clients', 'our_vision', 'our_mission'));
+        return view('backend.settings.landing_page_setting', compact('landing_page_toggle', 'slides_list', 'menu', 'menu_data', 'menu_list', 'pages', 'logo_data', 'sections', 'footer_data', 'app_locales', 'api_clients', 'our_vision', 'our_mission'));
     }
 
-    
+
     public function getLdapSettings(Request $request)
     {
         if (!auth()->user()->isAdmin()) {
             return abort(403);
         }
+
         $lang = request()->lang ?? 'en';
         $type = config('theme_layout');
-        $sections = Config::where('key', '=', 'layout_' . $type)->first();
-        $footer_data = Config::where('key', '=', 'footer_data')->first();
 
-        $logo_data = Config::where('key', '=', 'site_logo')->first();
-
+        // Read from .env instead of database
+        //$ldap_toggle = env('LDAP_TOGGLE', false) ? 1 : 0;
         $ldap_toggle = Config::where('key', 'ldap_toggle')->value('value') ?? 0;
+        //$ldap_connected = session('ldap_connected', 0); // since we are no longer storing in DB
 
+        $ldap_host = env('LDAP_HOST', '127.0.0.1');
+        $ldap_port = (int) env('LDAP_PORT', 1389);
+        $ldap_base_dn = env('LDAP_BASE_DN', '');
+        $ldap_username = env('LDAP_USERNAME', '');
+        $ldap_password = env('LDAP_PASSWORD', '');
         $ldap_connected = Config::where('key', 'ldap_connected')->value('value') ?? 0;
 
-        $footer_data = json_decode($footer_data->value);
-        $sections = json_decode($sections->value);
-        $app_locales = Locale::get();
-        $api_clients = OauthClient::paginate(10);
-        $our_vision = Config::where('key', '=', 'our_vision')->where('lang', $lang)->first();
-        if (!$our_vision) {
-            $our_vision = Config::create(['key' => 'our_vision', 'lang' => 'ar']);
-        }
-        $our_mission = Config::where('key', '=', 'our_mission')->where('lang', $lang)->first();
-        if (!$our_mission) {
-            $our_mission = Config::create(['key' => 'our_mission', 'lang' => 'ar']);
-        }
-
-         $menu = Null;
-        $menu_data = Null;
-        if ($request->menu) {
-            $menu = Menus::find($request->menu);
-            $menu_data = json_decode($menu->value);
-        }
-
-        $menu_list = Menus::get();
-
-        //dd( $menu_list );
-
-        $pages = Page::where('published', '=', 1)->get();
-
-        $slides_list = Slider::OrderBy('sequence','asc')->get();
-
-        return view('backend.settings.ldap_setting', compact('ldap_connected', 'ldap_toggle','slides_list','menu', 'menu_data', 'menu_list', 'pages','logo_data', 'sections', 'footer_data', 'app_locales', 'api_clients', 'our_vision', 'our_mission'));
+        return view('backend.settings.ldap_setting', compact(
+            'ldap_toggle',
+            'ldap_connected',
+            'ldap_host',
+            'ldap_port',
+            'ldap_base_dn',
+            'ldap_username',
+            'ldap_password'
+        ));
     }
 
-    
 
-    public function saveLdapSettings(Request $request)
+
+    public function saveLdapEnv(Request $request)
+    {
+        try {
+
+
+            $this->setEnv([
+                'LDAP_CONNECTION' => 'default',
+                'LDAP_HOST' => $request->ldap_host,
+                'LDAP_PORT' => (int) $request->ldap_port,
+                'LDAP_BASE_DN' => $request->ldap_base_dn,
+                'LDAP_USERNAME' => $request->ldap_username,
+                'LDAP_PASSWORD' => $request->ldap_password,
+            ]);
+
+            Config::updateOrCreate(
+                ['key' => 'ldap_toggle'],
+                ['value' => $request->has('ldap_toggle') ? 1 : 0]
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'configuration saved successfully'
+            ]);
+        } catch (\Exception $e) {
+
+
+            return response()->json([
+                'status' => 'failed',
+                'message' => "Failed saved configuration"
+            ]);
+        }
+    }
+
+    public function testLdapConnection(Request $request)
     {
 
-        $ldap_toggle = $request->has('ldap_toggle') ? 1 : 0;
+        try {
+            // Update config at runtime
+            config([
+                'ldap.connections.default.hosts' => [$request->ldap_host],
+                'ldap.connections.default.port' => (int) $request->ldap_port,
+                'ldap.connections.default.base_dn' => $request->ldap_base_dn,
+                'ldap.connections.default.username' => $request->ldap_username,
+                'ldap.connections.default.password' => $request->ldap_password,
+            ]);
 
-        if($ldap_toggle) {
-            try {
-                Container::getConnection()->connect();
-                $connected = true;
-                $connection_msg = "LDAP connected successfully from LMS!";
-            } catch (\Exception $e) {
-                $connected = false;
-                $connection_msg = "LDAP connection failed: " . $e->getMessage();
-            }
-        } else {
-            $connected = false;
+
+
+            // Now create a fresh connection with new config
+            $connection = Container::getConnection();
+
+
+            $connection->connect();
+
+
+            return response()->json([
+                'status' => 'connected',
+                'message' => 'LDAP Connected Successfully'
+            ]);
+        } catch (\Exception $e) {
+
+
+            return response()->json([
+                'status' => 'failed',
+                'message' => "Failed to connect to LDAP"
+            ]);
         }
-        
-       
-        
-        
-        
-
-
-        Config::updateOrCreate(
-            ['key' => 'ldap_toggle'],
-            ['value' => $ldap_toggle]
-        );
-
-        Config::updateOrCreate(
-            ['key' => 'ldap_connected'],
-            ['value' => $connected]
-        );
-            
-
-        return back()->withFlashSuccess(__('alerts.backend.general.updated'));
     }
+
+
+
+    private function setEnv(array $data)
+    {
+        $envPath = base_path('.env');
+
+        if (!File::exists($envPath)) {
+            return false;
+        }
+
+        $env = File::get($envPath);
+
+        foreach ($data as $key => $value) {
+            $value = (string) $value;
+            $pattern = "/^{$key}=.*$/m";
+
+            if (preg_match($pattern, $env)) {
+                $env = preg_replace($pattern, "{$key}={$value}", $env);
+            } else {
+                $env .= PHP_EOL . "{$key}={$value}";
+            }
+        }
+
+        // ✅ IMPORTANT: On Windows, DON'T use File::move()
+        File::put($envPath, $env);
+
+        return true;
+    }
+
 
     public function getSocialSettings()
     {

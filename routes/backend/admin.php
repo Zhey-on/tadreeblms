@@ -155,6 +155,9 @@ Route::group(['middleware' => 'permission:trainer_access'], function () {
     Route::get('ldap-users', 'Admin\EmployeeController@ldap_users_list')->name('ldap-user-listing');
     Route::get('ldap-users-get-data', 'Admin\EmployeeController@get_ldap_data')->name('employee.get_ldap_data');
 
+    Route::post('ldap/save-env', 'Admin\ConfigController@saveLdapEnv')->name('ldap.save.env');
+    Route::post('ldap/test-ldap', 'Admin\ConfigController@testLdapConnection')->name('ldap.test');
+
     Route::post('settings/contact', ['uses' => 'Admin\ConfigController@saveGeneralSettings'])->name('general-contact');
 
     Route::get('settings/social', ['uses' => 'Admin\ConfigController@getSocialSettings'])->name('social-settings');
