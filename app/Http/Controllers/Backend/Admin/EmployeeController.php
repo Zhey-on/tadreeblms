@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\Storage;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use App\Ldap\LdapUser;
+use App\Services\LicenseService;
 use App\Exports\EmployeeSampleExport;
 use App\Imports\EmployeeImport;
 // use Maatwebsite\Excel\Facades\Excel;
@@ -47,7 +48,13 @@ class EmployeeController extends Controller
 {
     use FileUploadTrait;
 
-    
+    protected $licenseService;
+
+    public function __construct(LicenseService $licenseService)
+    {
+        $this->licenseService = $licenseService;
+    }
+
     /**
      * Display a listing of Category.
      *
@@ -55,7 +62,9 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        //dd("fghff");
+        // // Sync user count to Keygen.sh when viewing user list
+        // $this->licenseService->syncUsersToKeygen();
+
         $status = $request->get('status');
         return view('backend.employee.index', [
             'status' => $status
@@ -389,6 +398,9 @@ class EmployeeController extends Controller
         $max = EmployeeProfile::create($data);
         $max->position = $request->position;
         $max->save();
+
+        // Sync user count to Keygen.sh
+        $this->licenseService->onUserCreated();
 
         try {
             $user_fav_lang = $employee->fav_lang;
@@ -1005,6 +1017,9 @@ class EmployeeController extends Controller
         $employee->employee_type = 'external';
         $employee->save();
         $employee->assignRole('student');
+
+        // Sync user count to Keygen.sh
+        $this->licenseService->onUserCreated();
 
         //require base_path("vendor/autoload.php");
 
