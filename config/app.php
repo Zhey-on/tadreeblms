@@ -196,7 +196,7 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        Collective\Html\HtmlServiceProvider::class,
+        Spatie\Html\HtmlServiceProvider::class,
 
         /*
          * Package Service Providers that aren't auto-discover...
@@ -227,12 +227,10 @@ return [
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         App\Providers\BladeServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
         App\Providers\ComposerServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\ObserverServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        //Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         class_exists(\LdapRecord\Laravel\LdapServiceProvider::class) ? \LdapRecord\Laravel\LdapServiceProvider::class : null,
 
 
@@ -292,8 +290,8 @@ return [
          */
         'Gravatar' => Creativeorange\Gravatar\Facades\Gravatar::class,
         'Socialite' => Laravel\Socialite\Facades\Socialite::class,
-        'Form' => Collective\Html\FormFacade::class,
-        'Html' => Collective\Html\HtmlFacade::class,
+        // 'Form' => Collective\Html\FormFacade::class,
+        // 'Html' => Collective\Html\HtmlFacade::class,
         'Image' => class_exists(\Intervention\Image\Facades\Image::class) ? \Intervention\Image\Facades\Image::class : null,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
 //        'Messenger' => Gerardojbaez\Messenger\Facades\Messenger::class,
