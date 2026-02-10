@@ -26,6 +26,8 @@ use Config;
 use App\Imports\UsersImport;
 use App\Jobs\GenerateInternalAttendanceReport;
 use App\Jobs\SendEmailJob;
+use App\Notifications\Backend\UserAuthNotification;
+use App\Services\NotificationSettingsService;
 use Illuminate\Support\Facades\Hash;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Mail;
@@ -416,13 +418,19 @@ class EmployeeController extends Controller
 
             dispatch(new SendEmailJob($details));
         } catch (Exception $e) {
-            return response()->json(['status' => 'success', 'clientmsg' => 'Added successfully Mail Not Send']);
+            \Log::error('Employee welcome email failed: ' . $e->getMessage());
         }
 
-        // if($save_id == true){
-        //     dd('ki');
-        //     return redirect()->route('admin.employee.index')->withFlashSuccess('Activation Mail send successfully');
-        // }
+        // --- Notification: Trainee Created (bell for admins) ---
+        try {
+            $notificationSettings = app(NotificationSettingsService::class);
+            if ($notificationSettings->shouldNotify('users', 'user_created', 'email')) {
+                UserAuthNotification::sendUserCreatedEmail($employee, 'Trainee');
+            }
+            UserAuthNotification::createUserCreatedBell($employee, 'Trainee');
+        } catch (\Exception $e) {
+            \Log::error('Employee created notification failed: ' . $e->getMessage());
+        }
 
         return response()->json(['status' => 'success', 'clientmsg' => 'Added successfully']);
         // return redirect()->route('admin.employee.index')->withFlashSuccess(trans('alerts.backend.general.created'));
@@ -524,6 +532,16 @@ class EmployeeController extends Controller
                 \Log::info('User updated - Keygen sync result', $result);
         } catch (\Exception $e) {
                 \Log::error('User updated - Keygen sync error', ['error' => $e->getMessage()]);
+        }
+
+        // --- Notification: Trainee Updated (bell for admins) ---
+        try {
+            $notificationSettings = app(NotificationSettingsService::class);
+            if ($notificationSettings->shouldNotify('users', 'user_updated', 'email')) {
+                UserAuthNotification::createUserUpdatedBell($teacher, 'Trainee');
+            }
+        } catch (\Exception $e) {
+            \Log::error('Employee updated notification failed: ' . $e->getMessage());
         }
 
         return redirect()->route('admin.employee.index')->withFlashSuccess(trans('alerts.backend.general.updated'));
@@ -1069,7 +1087,18 @@ Thanks,<br>" . env('APP_NAME');
 
 
         } catch (Exception $e) {
-            return response()->json(['status' => 'success', 'clientmsg' => 'Added successfully Mail Not Send']);
+            \Log::error('External employee welcome email failed: ' . $e->getMessage());
+        }
+
+        // --- Notification: Trainee Created (bell for admins) ---
+        try {
+            $notificationSettings = app(NotificationSettingsService::class);
+            if ($notificationSettings->shouldNotify('users', 'user_created', 'email')) {
+                UserAuthNotification::sendUserCreatedEmail($employee, 'Trainee');
+            }
+            UserAuthNotification::createUserCreatedBell($employee, 'Trainee');
+        } catch (\Exception $e) {
+            \Log::error('External employee created notification failed: ' . $e->getMessage());
         }
 
         return redirect()->route('admin.employee.external_index')->withFlashSuccess(trans('alerts.backend.general.created'));
