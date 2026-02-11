@@ -5,38 +5,38 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "barryvdh/laravel-dompdf": "^2.2",
+        "barryvdh/laravel-dompdf": "^3.0",
         "barryvdh/laravel-translation-manager": "^0.6",
         "creativeorange/gravatar": "^1.0",
         "darryldecode/cart": "^4.2",
         "directorytree/ldaprecord": "^3.0",
         "directorytree/ldaprecord-laravel": "^3.3",
-        "doctrine/dbal": "^3.7",
+        "doctrine/dbal": "^4.0",
         "guzzlehttp/guzzle": "^7.8",
-        "hashids/hashids": "^4.1",
+        "hashids/hashids": "^5.0",
         "jenssegers/agent": "^2.6",
         "laravel/cashier": "^15.0",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^12.0",
         "laravel/passport": "^12.0",
-        "laravel/socialite": "^5.11",
+        "laravel/socialite": "^5.12",
         "laravel/tinker": "^2.9",
-        "laravel/ui": "^4.5",
-        "league/commonmark": "^2.4",
-        "league/flysystem-aws-s3-v3": "^3.0",
-        "maatwebsite/excel": "^3.1.55",
+        "laravel/ui": "^4.6",
+        "league/commonmark": "^2.5",
+        "league/flysystem-aws-s3-v3": "^3.28",
+        "maatwebsite/excel": "^3.1",
         "paragonie/certainty": "^2.0",
         "phpmailer/phpmailer": "^6.9",
         "razorpay/razorpay": "^2.9",
-        "sendgrid/sendgrid": "^7.0",
+        "sendgrid/sendgrid": "^8.0",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-backup": "^9.0",
         "spatie/laravel-cookie-consent": "^3.3",
-        "spatie/laravel-html": "^3.11",
-        "spatie/laravel-ignition": "^2.4",
-        "spatie/laravel-permission": "^6.4",
+        "spatie/laravel-html": "^3.10",
+        "spatie/laravel-ignition": "^2.5",
+        "spatie/laravel-permission": "^6.0",
         "torann/geoip": "^3.0",
-        "yajra/laravel-datatables-buttons": "^11.0",
-        "yajra/laravel-datatables-oracle": "^11.0",
+        "yajra/laravel-datatables-buttons": "^12.0",
+        "yajra/laravel-datatables-oracle": "^12.0",
         "unisharp/laravel-filemanager": "^2.9"
     },
     "require-dev": {
@@ -44,7 +44,7 @@
         "fakerphp/faker": "^1.23",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.1",
-        "phpunit/phpunit": "^10.5"
+        "phpunit/phpunit": "^11.0"
     },
     "autoload": {
         "psr-4": {
@@ -76,7 +76,7 @@
     "config": {
         "preferred-install": "dist",
         "sort-packages": true,
-        "optimize-autoloader": true
+        "optimize-autoloader": false
     },
     "minimum-stability": "stable",
     "prefer-stable": true
