@@ -46,8 +46,22 @@
 }
 </style>
 
+@php
+    $courseId = request()->get('course_id');
+@endphp
 
-@include('backend.includes.partials.course-steps', ['step' => 4, 'course_id' => $_GET['course_id'], 'course' => null])
+@if($courseId)
+    @include('backend.includes.partials.course-steps', [
+        'step' => 4,
+        'course_id' => $courseId,
+        'course' => null
+    ])
+@else
+    <div class="alert alert-info mt-3">
+        Please select a course to manage feedback questions.
+    </div>
+@endif
+
 
 {!! Form::open(['method' => 'POST', 'id' => 'addFeedbackQue', 'files' => true]) !!}
 <div class="text-center">
@@ -78,7 +92,9 @@
                     <option value=""> Select Course </option>
 
                     @foreach($courses as $row)
-                    <option value="{{ $row->id }}" @if(isset($_GET['course_id']) && ($_GET['course_id'] == $row->id)) selected="" @endif> {{ $row->title }} </option>
+                    <option value="{{ $row->id }}" @if($courseId == $row->id) selected @endif>
+                         {{ $row->title }}
+</option>
                     @endforeach
                 </select>
                 <span class="custom-select-icon">
@@ -144,7 +160,15 @@
             </div>
         </div> -->
     </div>
-    <input type="hidden" id="final_index" value="{{ route('admin.assessment_accounts.final-submit', [$_GET['course_id']]) }}"> 
+  <!-- @if($courseId)
+    <input type="hidden" id="final_index" value="{{ route('admin.assessment_accounts.final-submit', [$courseId]) }}">
+@endif -->
+@if(!empty($courseId))
+    <input type="hidden" id="final_index" value="{{ route('admin.assessment_accounts.final-submit', [$courseId]) }}">
+@else
+    <input type="hidden" id="final_index" value="#">
+@endif
+
     <input type="hidden" id="feedback_index" value="{{ route('admin.feedback_question.index') }}">
 </div></div>
     </div>
@@ -219,7 +243,7 @@ $(document).on('submit', '#addFeedbackQue', function (e) {
                     window.location.href = redirect_url;
                     return;
                 }
-                if(nxt_url_val = 'Done'){
+                if(nxt_url_val == 'Done'){
                     window.location.href = redirect_url_course;
                     return;
                 }
