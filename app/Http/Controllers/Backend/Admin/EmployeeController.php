@@ -120,18 +120,7 @@ class EmployeeController extends Controller
     }
 
 
-        return redirect()->back()->withErrors($failures);
-    }
-}
 
-
-    public function downloadSample()
-{
-    return Excel::download(
-        new \App\Exports\EmployeeSampleExport(),
-        'employee_import_sample.xlsx'
-    );
-}   
     /**
      * Display a listing of Courses via ajax DataTable.
      *
