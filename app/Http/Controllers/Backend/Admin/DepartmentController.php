@@ -113,7 +113,7 @@ class DepartmentController extends Controller
                 return $text;
             })
             ->addColumn('created', function ($q) {
-                return $q->created_at->diffforhumans();
+                return $q->created_at ? $q->created_at->diffforhumans() : '-';
             })
             ->rawColumns(['image', 'actions','status'])
             ->make();
@@ -232,8 +232,7 @@ class DepartmentController extends Controller
 
 
         $page->meta_title = $request->meta_title;
-        //$page->published = 1;
-        $page->published = $request->published;
+        $page->published = 1;
         $page->sidebar = 0;
         $page->save();
 
@@ -342,15 +341,16 @@ class DepartmentController extends Controller
                         $exist_slug = Department::where('slug',Str::slug(trim($ExcelValue[0])))->first();
 
                         if(empty($exist_slug)){
-                        if($ExcelValue[1] != null){
                                 $RetailerPlanId = 0;
                                 $RetailerPlan = new Department();
                                 $RetailerPlan->title = trim($ExcelValue[0]);
-                                $RetailerPlan->slug = Str::slug(trim($ExcelValue[0]));
-                                $message = trim($ExcelValue[1]);
-                                $dom = new \DOMDocument();
-                                $dom->loadHtml(mb_convert_encoding($message,  'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-                                $RetailerPlan->content = $dom->saveHTML();
+                                $RetailerPlan->slug = str_slug(trim($ExcelValue[0]));
+                                // $message = isset($ExcelValue[1]) ? trim($ExcelValue[1]) : null;
+                                // if ($message) {
+                                //     $dom = new \DOMDocument();
+                                //     $dom->loadHtml(mb_convert_encoding($message,  'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+                                //     $RetailerPlan->content = $dom->saveHTML();
+                                // }
                                 $RetailerPlan->user_id = auth()->user()->id;
                                 $RetailerPlan->published = 1;
                                 $RetailerPlan->sidebar = 1;
@@ -361,7 +361,6 @@ class DepartmentController extends Controller
                             if($IsDataSuccessfullyInserted){
                                 $TotalData++;
                             }
-                        }
                 }
                 else{
 
