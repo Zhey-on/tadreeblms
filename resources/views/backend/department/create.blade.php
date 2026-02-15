@@ -143,6 +143,10 @@
     last_part=hrefurl.substr(hrefurl.lastIndexOf('/') + 19)
    // alert(last_part)
     setTimeout(() => {
+        // Sync CKEditor content back to textarea before serializing
+        for (var instance in CKEDITOR.instances) {
+            CKEDITOR.instances[instance].updateElement();
+        }
         let data = $('#add-dep').serialize();
         let url = '{{route('admin.department.store')}}';
         var redirect_url=$("#feedback_index").val();
