@@ -14,6 +14,7 @@ use Yajra\DataTables\DataTables;
 use App\Imports\DepartmentImport;
 use Config;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Str;
 
 
 class DepartmentController extends Controller
@@ -144,7 +145,7 @@ class DepartmentController extends Controller
         $page = new Department();
         $page->title = $request->title;
         if($request->slug == ""){
-            $page->slug = str_slug($request->title);
+            $page->slug = Str::slug($request->title);
         }else{
             $page->slug = $request->slug;
         }
@@ -216,7 +217,7 @@ class DepartmentController extends Controller
         $page = Department::findOrFail($id);
         $page->title = $request->title;
         if($request->slug == ""){
-            $page->slug = str_slug($request->title);
+            $page->slug = Str::slug($request->title);
         }else{
             $page->slug = $request->slug;
         }
@@ -337,14 +338,14 @@ class DepartmentController extends Controller
                         }
                         $count++;
                         $IsDataSuccessfullyInserted = false;
-                        $exist_slug = Department::where('slug',str_slug(trim($ExcelValue[0])))->first();
+                        $exist_slug = Department::where('slug',Str::slug(trim($ExcelValue[0])))->first();
 
                         if(empty($exist_slug)){
                         if($ExcelValue[1] != null){
                                 $RetailerPlanId = 0;
                                 $RetailerPlan = new Department();
                                 $RetailerPlan->title = trim($ExcelValue[0]);
-                                $RetailerPlan->slug = str_slug(trim($ExcelValue[0]));
+                                $RetailerPlan->slug = Str::slug(trim($ExcelValue[0]));
                                 $message = trim($ExcelValue[1]);
                                 $dom = new \DOMDocument();
                                 $dom->loadHtml(mb_convert_encoding($message,  'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
