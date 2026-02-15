@@ -200,7 +200,7 @@ Route::group(['middleware' => 'permission:trainer_access'], function () {
 
     //===== Slider Routes =====/
     Route::resource('sliders', 'Admin\SliderController');
-    Route::get('sliders/status/{id}', 'Admin\SliderController@status')->name('sliders.status', 'id');
+    Route::get('sliders/status/{id}', 'Admin\SliderController@status')->name('sliders.status.get', 'id');
     Route::post('sliders/save-sequence', ['uses' => 'Admin\SliderController@saveSequence', 'as' => 'sliders.saveSequence']);
     Route::post('sliders/status', ['uses' => 'Admin\SliderController@updateStatus', 'as' => 'sliders.status']);
 
