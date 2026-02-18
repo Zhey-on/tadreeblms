@@ -21,6 +21,8 @@ use Auth;
 use Carbon\Carbon;
 use CustomHelper;
 use Exception;
+use App\Notifications\Backend\AssessmentNotification;
+use App\Services\NotificationSettingsService;
 
 class AssessmentController extends Controller
 {
@@ -45,7 +47,11 @@ class AssessmentController extends Controller
     public function courseFeedback(Request $request)
     {
         $course_id = $request->course_id;
-        $courses_feedbacks = DB::table('courses_feedbacks')->where('course_id', $course_id)->get();
+        
+        // Use Eloquent with eager loading for better performance and security
+        $courses_feedbacks = CourseFeedback::where('course_id', $course_id)
+            ->with(['feedback.feedbackOptions']) // Eager load feedback questions and their options
+            ->get();
 
         return view($this->path . '/assignment/' . 'user-feedback', compact('course_id', 'courses_feedbacks'));
     }
@@ -60,16 +66,17 @@ class AssessmentController extends Controller
         
         if ($request->assignment) {
             $assignment_code = $request->assignment;
-            $id = $request->id;
+            $id = $request->input('id');
             $logged_in_user_id = auth()->user()->id;
-            
+
+            $request->session()->put('assessment_assignment_id', $id);
+            $request->session()->put('assessment_test_id', $request->input('assessment_id'));
+
             if(empty(auth()->user()->employee_type)) {
                 // admin
                 $assignment = Assignment::where('url_code', $assignment_code)->first();
                 //dd($assignment);
             } else {
-                $request->session()->put('assessment_assignment_id', $id);
-                $request->session()->put('assessment_test_id', $request->assessment_id);
                 $user_id = $logged_in_user_id;
                 $assignment = Assignment::where('url_code', $assignment_code)->first();
                 $assignment_id = $assignment->id;
@@ -84,7 +91,7 @@ class AssessmentController extends Controller
                 }
 
                 $assessment_account = courseAssignment::where('id', $id)->first();
-                
+
 
                 if ($assessment_account == null) {
                     //throw new Exception('Assignment is not valid!');
@@ -390,7 +397,8 @@ class AssessmentController extends Controller
             AssignmentQuestion::insert($data);
         }
 
-
+        $has_feedback = 0;
+        $return_url = route('user.mycourses');
         //Update the subscribe Course
         if(isset($user_id) && isset( $assignment_id )) {
 
@@ -455,15 +463,38 @@ class AssessmentController extends Controller
                 
 
                 $progressdata = CustomHelper::updateUserProgress($user_id, $course_id);
+
+                // Assessment Submitted + Graded notifications
+                try {
+                    $notificationSettings = app(NotificationSettingsService::class);
+                    $notifUser = \App\Models\Auth\User::find($user_id);
+                    $courseName = $sb->course->title ?? 'Assessment';
+
+                    if ($notifUser) {
+                        if ($notificationSettings->shouldNotify('assessments', 'test_completed', 'email')) {
+                            AssessmentNotification::createAssessmentSubmittedBell($notifUser, $courseName);
+                        }
+
+                        if ($notificationSettings->shouldNotify('assessments', 'test_results_published', 'email')) {
+                            $scorePercent = round((float) $sb->assignmentScore($user_id));
+                            $status = $sb->course->assignmentStatus($user_id, $scorePercent) ?? 'Completed';
+                            AssessmentNotification::sendAssessmentGradedEmail($notifUser, $courseName, $scorePercent, $status);
+                            AssessmentNotification::createAssessmentGradedBell($notifUser, $courseName, $scorePercent, $status);
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    \Log::error('Failed to send assessment notification: ' . $e->getMessage());
+                }
             }
-          
-            
+
+
         }
         
         
 
         $request->session()->forget('assessment_user_id');
         $request->session()->forget('assessment_assignment_id');
+        $request->session()->forget('assessment_test_id');
         return json_encode(array(
             'status' => 200,
             'has_feedback' => $has_feedback,

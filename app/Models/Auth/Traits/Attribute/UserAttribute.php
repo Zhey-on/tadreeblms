@@ -139,6 +139,11 @@ trait UserAttribute
      */
     public function getLoginAsButtonAttribute()
     {
+        // Hide feature by default (env-controlled)
+        if (! config('access.impersonation')) {
+            return '';
+        }
+
         /*
          * If impersonation is enabled and the admin is currently NOT spoofing a user
          */
@@ -328,7 +333,11 @@ trait UserAttribute
             '.$this->status_button.'
             '.$this->confirmed_button.'
         </div>
-        '.($this->login_as_button ? '<div class="mt-2 mb-2">'.$this->login_as_button.'</div>' : '').'
+        '.(
+            config('access.impersonation') 
+            ? '<div class="mt-2 mb-2">'. $this->login_as_button.'</div>' 
+            : ''
+        ).'
     </div>';
 }
 }

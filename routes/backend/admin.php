@@ -147,6 +147,17 @@ Route::group(['middleware' => 'permission:trainer_access'], function () {
     
     Route::get('settings/landing-page-setting', ['uses' => 'Admin\ConfigController@getLandingPageSettings', 'as' => 'landing-page-setting']);
 
+    Route::get('settings/ldap-setting', ['uses' => 'Admin\ConfigController@getLdapSettings', 'as' => 'ldap-setting']);
+
+    Route::post('settings/ldap-setting', ['uses' => 'Admin\ConfigController@saveLdapSettings'])->name('ldap-settings');
+
+    
+    Route::get('ldap-users', 'Admin\EmployeeController@ldap_users_list')->name('ldap-user-listing');
+    Route::get('ldap-users-get-data', 'Admin\EmployeeController@get_ldap_data')->name('employee.get_ldap_data');
+
+    Route::post('ldap/save-env', 'Admin\ConfigController@saveLdapEnv')->name('ldap.save.env');
+    Route::post('ldap/test-ldap', 'Admin\ConfigController@testLdapConnection')->name('ldap.test');
+
     Route::post('settings/contact', ['uses' => 'Admin\ConfigController@saveGeneralSettings'])->name('general-contact');
 
     Route::get('settings/social', ['uses' => 'Admin\ConfigController@getSocialSettings'])->name('social-settings');
@@ -166,6 +177,21 @@ Route::group(['middleware' => 'permission:trainer_access'], function () {
     Route::post('settings/zoom', ['uses' => 'Admin\ConfigController@saveZoomSettings'])->name('zoom-settings');
     Route::post('test', ['uses' => 'Admin\ConfigController@saveZoomSettings'])->name('zoom-settings');
 
+    //===== Notification Settings Routes =====//
+    Route::get('settings/notifications', 'Admin\NotificationSettingsController@index')->name('notification-settings');
+    Route::post('settings/notifications/update', 'Admin\NotificationSettingsController@update')->name('notification-settings.update');
+    Route::post('settings/notifications/bulk-module', 'Admin\NotificationSettingsController@bulkUpdateModule')->name('notification-settings.bulk-module');
+    Route::post('settings/notifications/bulk-channel', 'Admin\NotificationSettingsController@bulkUpdateChannel')->name('notification-settings.bulk-channel');
+    Route::get('settings/notifications/audit-log', 'Admin\NotificationSettingsController@auditLog')->name('notification-settings.audit-log');
+   //===== License Settings Routes =====//
+    Route::get('settings/license', ['uses' => 'Admin\LicenseController@index'])->name('license-settings');
+    Route::post('settings/license/activate', ['uses' => 'Admin\LicenseController@activate'])->name('license.activate');
+    Route::post('settings/license/validate', ['uses' => 'Admin\LicenseController@revalidate'])->name('license.validate');
+    Route::post('settings/license/remove', ['uses' => 'Admin\LicenseController@remove'])->name('license.remove');
+    Route::get('settings/license/status', ['uses' => 'Admin\LicenseController@status'])->name('license.status');
+    Route::post('settings/license/sync-users', ['uses' => 'Admin\LicenseController@syncUsers'])->name('license.sync-users');
+    Route::get('settings/license/check-limit', ['uses' => 'Admin\LicenseController@checkUserLimit'])->name('license.check-limit');
+    Route::get('settings/license/keygen-usage', ['uses' => 'Admin\LicenseController@keygenUsage'])->name('license.keygen-usage');
     //===== SMTP Email Settings Routes =====//
     Route::get('settings/smtp', ['uses' => 'Admin\SmtpSettingsController@index'])->name('smtp-settings');
     Route::post('settings/smtp', ['uses' => 'Admin\SmtpSettingsController@save'])->name('smtp-settings.save');
@@ -174,7 +200,7 @@ Route::group(['middleware' => 'permission:trainer_access'], function () {
 
     //===== Slider Routes =====/
     Route::resource('sliders', 'Admin\SliderController');
-    Route::get('sliders/status/{id}', 'Admin\SliderController@status')->name('sliders.status', 'id');
+    Route::get('sliders/status/{id}', 'Admin\SliderController@status')->name('sliders.status.get', 'id');
     Route::post('sliders/save-sequence', ['uses' => 'Admin\SliderController@saveSequence', 'as' => 'sliders.saveSequence']);
     Route::post('sliders/status', ['uses' => 'Admin\SliderController@updateStatus', 'as' => 'sliders.status']);
 
@@ -335,6 +361,11 @@ Route::get('bundle-publish/{id}', ['uses' => 'Admin\BundlesController@publish', 
 
 
 //===== Lessons Routes =====//
+Route::get('lessons/add', function () {
+    return redirect()->route('admin.lessons.create');
+});
+
+
 Route::resource('lessons', 'Admin\LessonsController');
 Route::resource('course-feedback-questions', 'Admin\CourseFeebackController');
 Route::get('course-feedback-questions/delete/{id}', 'Admin\CourseFeebackController@destroy');
@@ -433,6 +464,13 @@ Route::post('messages/send', ['uses' => 'MessagesController@send', 'as' => 'mess
 Route::post('messages/reply', ['uses' => 'MessagesController@reply', 'as' => 'messages.reply']);
 
 
+//==== User Notifications Routes =====//
+Route::post('notifications/unread', ['uses' => 'Admin\UserNotificationController@getUnreadNotifications', 'as' => 'notifications.unread']);
+Route::post('notifications/mark-read/{id}', ['uses' => 'Admin\UserNotificationController@markAsRead', 'as' => 'notifications.mark_read']);
+Route::post('notifications/mark-all-read', ['uses' => 'Admin\UserNotificationController@markAllAsRead', 'as' => 'notifications.mark_all_read']);
+Route::get('notifications', ['uses' => 'Admin\UserNotificationController@index', 'as' => 'notifications.index']);
+
+
 //=== Invoice Routes =====//
 Route::get('invoice/download/{order}', ['uses' => 'Admin\InvoiceController@getInvoice', 'as' => 'invoice.download']);
 Route::get('invoices/view/{code}', ['uses' => 'Admin\InvoiceController@showInvoice', 'as' => 'invoices.view']);
@@ -467,7 +505,7 @@ Route::delete('pages_perma_del/{id}', ['uses' => 'Admin\PageController@perma_del
 Route::resource('reasons', 'Admin\ReasonController');
 Route::get('get-reasons-data', ['uses' => 'Admin\ReasonController@getData', 'as' => 'reasons.get_data']);
 Route::post('reasons_mass_destroy', ['uses' => 'Admin\ReasonController@massDestroy', 'as' => 'reasons.mass_destroy']);
-Route::get('reasons/status/{id}', 'Admin\ReasonController@status')->name('reasons.status');
+Route::get('reasons/status/{id}', 'Admin\ReasonController@status')->name('reasons.status.get');
 Route::post('reasons/status', ['uses' => 'Admin\ReasonController@updateStatus', 'as' => 'reasons.status']);
 
 
@@ -554,6 +592,7 @@ Route::post('subscription/status', ['uses' => 'Admin\SubscriptionController@upda
 
 // Custom Track Student Progress
 Route::get('enrolled-student/{course_id}', 'Admin\EmployeeController@enrolled_student')->name('enrolled_student');
+Route::post('enroll-users', 'Admin\AssessmentAccountsController@direct_enroll_users')->name('enroll_users');
 Route::get('course_detail/{course_id}/{employee_id}', 'Admin\CoursesController@course_detail')->name('employee.course_detail');
 Route::get('get_data_employee_course/{course_id}/{employee_id}', 'Admin\CoursesController@get_data_employee_course')->name('courses.get_data_employee_course');
 Route::get('enrolled_get_data/{course_id}/{show_deleted?}/{search_type?}', 'Admin\EmployeeController@enrolled_get_data')->name('employee.enrolled_get_data');
@@ -599,7 +638,7 @@ Route::get('news-edit/{page}', 'Admin\NewsController@edit')->name('news.edit');
 Route::post('news-update/{page}', 'Admin\NewsController@update')->name('news.update');
 Route::get('get-news-data', ['uses' => 'Admin\NewsController@getData', 'as' => 'news.get_data']);
 Route::delete('news_mass_destroy/{page}', ['uses' => 'Admin\NewsController@destroy', 'as' => 'news.destroy']);
-Route::get('news/status/{id}', 'Admin\NewsController@status')->name('news.status');
+Route::get('news/status/{id}', 'Admin\NewsController@status')->name('news.status.get');
 Route::post('news/status', ['uses' => 'Admin\NewsController@updateStatus', 'as' => 'news.status']);
 
 // Latest Events
@@ -611,7 +650,7 @@ Route::get('events-edit/{page}', 'Admin\EventsController@edit')->name('events.ed
 Route::post('events-update/{page}', 'Admin\EventsController@update')->name('events.update');
 Route::get('get-events-data', ['uses' => 'Admin\EventsController@getData', 'as' => 'events.get_data']);
 Route::delete('events_mass_destroy/{page}', ['uses' => 'Admin\EventsController@destroy', 'as' => 'events.destroy']);
-Route::get('events/status/{id}', 'Admin\EventsController@status')->name('events.status');
+Route::get('events/status/{id}', 'Admin\EventsController@status')->name('events.status.get');
 Route::post('events/status', ['uses' => 'Admin\EventsController@updateStatus', 'as' => 'events.status']);
 
 // Latest Libraries
@@ -623,7 +662,7 @@ Route::get('libraries-edit/{page}', 'Admin\LibraryController@edit')->name('libra
 Route::post('libraries-update/{page}', 'Admin\LibraryController@update')->name('libraries.update');
 Route::get('get-libraries-data', ['uses' => 'Admin\LibraryController@getData', 'as' => 'libraries.get_data']);
 Route::delete('libraries_mass_destroy/{page}', ['uses' => 'Admin\LibraryController@destroy', 'as' => 'libraries.destroy']);
-Route::get('libraries/status/{id}', 'Admin\LibraryController@status')->name('libraries.status');
+Route::get('libraries/status/{id}', 'Admin\LibraryController@status')->name('libraries.status.get');
 Route::post('libraries/status', ['uses' => 'Admin\LibraryController@updateStatus', 'as' => 'libraries.status']);
 
 
@@ -636,7 +675,7 @@ Route::get('announcement-edit/{page}', 'Admin\AnnouncementController@edit')->nam
 Route::post('announcement-update/{page}', 'Admin\AnnouncementController@update')->name('announcement.update');
 Route::get('get-announcement-data', ['uses' => 'Admin\AnnouncementController@getData', 'as' => 'announcement.get_data']);
 Route::delete('announcement_mass_destroy/{page}', ['uses' => 'Admin\AnnouncementController@destroy', 'as' => 'announcement.destroy']);
-Route::get('announcement/status/{id}', 'Admin\AnnouncementController@status')->name('announcement.status');
+Route::get('announcement/status/{id}', 'Admin\AnnouncementController@status')->name('announcement.status.get');
 Route::post('announcement/status', ['uses' => 'Admin\AnnouncementController@updateStatus', 'as' => 'announcement.status']);
 
 // Student Feedback

@@ -13,12 +13,36 @@ use App\Http\Controllers\UserCourseRequestController;
 use App\Jobs\SendEmailJob;
 use App\Models\AssignmentQuestion;
 use Illuminate\Http\Request;
-
+use App\Http\Controllers\LessonController;
 //Route::get('/install', [InstallerController::class, 'index']);
 //Route::post('/install/run', [InstallerController::class, 'run']);
 
 use App\Http\Controllers\Backend\MenuController;
 use App\Http\Controllers\Frontend\Auth\LoginController;
+use App\Ldap\LdapUser;
+use LdapRecord\Container;
+
+Route::get('/ldap-test', function () {
+    try {
+        Container::getConnection()->connect();
+        return "✅ LDAP connected successfully from LMS!";
+    } catch (\Exception $e) {
+        return "❌ LDAP connection failed: " . $e->getMessage();
+    }
+});
+
+Route::get('/ldap-users', function () {
+    $users = LdapUser::query()->get();
+
+    return $users->map(function ($user) {
+        return [
+            'dn'       => $user->getDn(),
+            'name'     => $user->getFirstAttribute('cn'),
+            'email'    => $user->getFirstAttribute('mail'),
+            'username' => $user->getFirstAttribute('uid'),
+        ];
+    });
+});
 
 Route::get('/refresh-captcha/{mode?}',[LoginController::class,'refresh_captcha'])->name('refresh_captcha');
 
@@ -48,7 +72,7 @@ Route::get('email-test', function () {
 Route::get('lang/{lang}', [LanguageController::class, 'swap']);
 
 
-Route::get('/sitemap-' . str_slug(config('app.name')) . '/{file?}', 'SitemapController@index');
+Route::get('/sitemap-' . \Illuminate\Support\Str::slug(config('app.name')) . '/{file?}', 'SitemapController@index');
 
 
 //============ Remove this  while creating zip for Envato ===========//
@@ -81,6 +105,11 @@ Route::group(['namespace' => 'Frontend', 'as' => 'frontend.'], function () {
 Route::get('/refresh-captcha', [\App\Http\Controllers\Frontend\Auth\LoginController::class, 'refreshCaptcha'])
     ->name('refresh.captcha');
 
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/user/lessons/create', [LessonController::class, 'create'])->name('lessons.create');
+    Route::post('/user/lessons/store', [LessonController::class, 'store'])->name('lessons.store');
+});
 
 /*
  * Backend Routes
@@ -281,21 +310,31 @@ Route::get('get-subscription-data', [SubscriptionController::class, 'getData'])-
 // wishlist
 Route::post('add-to-wishlist', 'Backend\WishlistController@store')->name('add-to-wishlist');
 
-Route::group(['namespace' => 'Frontend', 'as' => 'frontend.'], function () {
-    Route::get('/{page?}', [HomeController::class, 'index'])->name('index');
-});
 
 
 Route::post('add-to-subscription', 'SubscriptionController@add_subscription')->name('add.subscription');
 Route::group(['middleware' => 'auth', 'prefix' => 'user'], function () {
+   Route::get('lessons', [\App\Http\Controllers\Backend\Admin\LessonsController::class, 'index'])
+        ->name('admin.lessons.index');
+
+    Route::get('lessons/create', [\App\Http\Controllers\Backend\Admin\LessonsController::class, 'create'])
+        ->name('admin.lessons.create');
+
+    Route::post('lessons', [\App\Http\Controllers\Backend\Admin\LessonsController::class, 'store'])
+        ->name('admin.lessons.store');
+    
     Route::get('calender', [CalenderController::class, 'show_list'])->name('user.calender');
     Route::post('add-event', [CalenderController::class, 'add_event'])->name('user.add-event');
     Route::get('myassignment', [AssessmentController::class, 'myassignment'])->name('user.myassignment');
     Route::get('myassignment/data', [AssessmentController::class, 'getMyAssignmentData'])->name('user.myassignment.getdata');
-
+    
     Route::get('my-courses', [CoursesController::class, 'mycourses'])->name('user.mycourses');
     Route::get('my-pathway-courses', [CoursesController::class, 'mypathwaycourses'])->name('user.mypathwaycourses');
-});
+    });
 
-Route::get('my-courses/data', [CoursesController::class, 'getMyCoursesData'])->name('user.mycourses.getdata');
+    Route::get('my-courses/data', [CoursesController::class, 'getMyCoursesData'])->name('user.mycourses.getdata');
 Route::get('my-pathwaycourses/data', [CoursesController::class, 'getMyPathWayCoursesData'])->name('user.mypathwaycourses.getdata');
+
+    Route::group(['namespace' => 'Frontend', 'as' => 'frontend.'], function () {
+        Route::get('/{page?}', [HomeController::class, 'index'])->name('index');
+    });

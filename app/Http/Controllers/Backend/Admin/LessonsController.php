@@ -21,6 +21,10 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\Backend\LessonNotification;
+use App\Services\NotificationSettingsService;
+use Illuminate\Support\Str;
+
 class LessonsController extends Controller
 {
     use FileUploadTrait;
@@ -216,6 +220,17 @@ class LessonsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function selectCourse()
+{
+    if (!Gate::allows('lesson_create')) {
+        return abort(401);
+    }
+
+    $courses = Course::has('category')->orderBy('title')->get();
+     return view('backend.lessons.select-course', compact('courses'));
+}
+
     public function create(Request $request)
     {
         //dd($request->all());
@@ -223,28 +238,14 @@ class LessonsController extends Controller
         if (!Gate::allows('lesson_create')) {
             return abort(401);
         }
+       
+
+        //dd( $course); 
+
         $courses = Course::has('category')->get()->pluck('title', 'id')->prepend('Please select', '');
-        $course_id = $request->course_id;
-
-        $temp_id = $request->uuid ?? null;
-
-        if ($request->ajax()) {
-            $courses = Course::where('temp_id', $temp_id)->where('id',$course_id)->first();
-            $checkCat = Category::where('id', $courses->category_id)->first();
-            if ($checkCat) {
-                $data = ['success' => true, 'category' => $checkCat->name];
-            } else {
-                $data = ['success' => false, 'category' => 'not found!!'];
-            }
-            return $data;
-        }
-
-        $course = Course::with('latestModuleWeightage')->where('id',$course_id)->first();
-
-        //dd( $course);
-
-        $courses_all = Course::has('category')->get()->pluck('title', 'category_id')->prepend('Please select', '');
-        return view('backend.lessons.create', compact('courses', 'courses_all', 'temp_id', 'course'));
+         $courses_all = null;
+    $temp_id = uniqid();
+        return view('backend.lessons.create', compact('courses' ,   'courses_all','temp_id'));
     }
 
     /**
@@ -273,7 +274,7 @@ class LessonsController extends Controller
                 $slug = "";
                 
                 
-                $slug = uniqid() . $request->title[$i];
+                $slug = uniqid() . Str::slug($request->title[$i]);
                 
 
                 $slug_lesson = Lesson::where('slug', '=', $slug)->first();
@@ -299,7 +300,17 @@ class LessonsController extends Controller
                 $lesson->lesson_start_date = $request->lesson_start_date ? date('Y-m-d H:i', strtotime($request->lesson_start_date)) : null;
                 $lesson->save();
 
-                
+                // Lesson added notification
+                try {
+                    $notificationSettings = app(NotificationSettingsService::class);
+                    if ($notificationSettings->shouldNotify('lessons', 'lesson_added', 'email')) {
+                        $lessonCourse = Course::find($request->course_id);
+                        LessonNotification::sendLessonAddedEmail(\Auth::user(), $lesson, $lessonCourse);
+                        LessonNotification::createLessonAddedBell(\Auth::user(), $lesson, $lessonCourse);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to send lesson added notification: ' . $e->getMessage());
+                }
 
                 $media = null;
 
@@ -495,7 +506,7 @@ class LessonsController extends Controller
            
             $slug = "";
             if (($request->slug == "") || $request->slug == null) {
-                $slug = str_slug($request->title);
+                $slug = Str::slug($request->title);
             } elseif ($request->slug != null) {
                 $slug = $request->slug;
             }
@@ -511,6 +522,18 @@ class LessonsController extends Controller
             $lesson->duration = $request->duration;
             $lesson->lesson_start_date = date('Y-m-d H:i', strtotime($request->lesson_start_date));
             $lesson->save();
+
+            // Lesson updated notification
+            try {
+                $notificationSettings = app(NotificationSettingsService::class);
+                if ($notificationSettings->shouldNotify('lessons', 'lesson_updated', 'email')) {
+                    $lessonCourse = Course::find($lesson->course_id);
+                    LessonNotification::sendLessonUpdatedEmail(\Auth::user(), $lesson, $lessonCourse);
+                    LessonNotification::createLessonUpdatedBell(\Auth::user(), $lesson, $lessonCourse);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send lesson updated notification: ' . $e->getMessage());
+            }
 
             //throw new Exception('This is an intentional exception for testing purposes.');
             //dd("update");

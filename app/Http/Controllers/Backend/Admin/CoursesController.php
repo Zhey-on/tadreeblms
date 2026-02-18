@@ -28,6 +28,9 @@ use DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Session;
 use App\Exports\CourseAssignmentReportExport;
+use App\Notifications\Backend\CourseNotification;
+use App\Services\NotificationSettingsService;
+use Illuminate\Support\Str;
 
 class CoursesController extends Controller
 {
@@ -67,23 +70,23 @@ class CoursesController extends Controller
                 return abort(401);
             }
             $courses = Course::query()->onlyTrashed()
-                ->whereHas('category')
+                // ->whereHas('category')
                 ->ofTeacher()->orderBy('created_at', 'desc');
         } elseif (request('teacher_id') != "") {
             $id = request('teacher_id');
             $courses = Course::query()->ofTeacher()
-                ->whereHas('category')
+                // ->whereHas('category')
                 ->whereHas('teachers', function ($q) use ($id) {
                     $q->where('course_user.user_id', '=', $id);
                 })->orderBy('created_at', 'desc');
         } elseif (request('cat_id') != "") {
             $id = request('cat_id');
             $courses = Course::query()->ofTeacher()
-                ->whereHas('category')
+                // ->whereHas('category')
                 ->where('category_id', '=', $id)->orderBy('created_at', 'desc');
         } else {
             $courses = Course::query()->ofTeacher()
-                ->whereHas('category')
+                // ->whereHas('category')
                 ->orderBy('created_at', 'desc');
         }
 
@@ -206,23 +209,23 @@ class CoursesController extends Controller
                 return abort(401);
             }
             $courses = Course::query()->onlyTrashed()
-                ->whereHas('category')
+                // ->whereHas('category')
                 ->ofTeacher()->orderBy('created_at', 'desc');
         } elseif (request('teacher_id') != "") {
             $id = request('teacher_id');
             $courses = Course::query()->ofTeacher()
-                ->whereHas('category')
+                // ->whereHas('category')
                 ->whereHas('teachers', function ($q) use ($id) {
                     $q->where('course_user.user_id', '=', $id);
                 })->orderBy('created_at', 'desc');
         } elseif (request('cat_id') != "") {
             $id = request('cat_id');
             $courses = Course::query()->ofTeacher()
-                ->whereHas('category')
+                // ->whereHas('category')
                 ->where('category_id', '=', $id)->orderBy('created_at', 'desc');
         } else {
             $courses = Course::query()
-                ->whereHas('category')
+                // ->whereHas('category')
                 ->orderBy('created_at', 'desc');
             //dd("jlj");
         }
@@ -580,14 +583,19 @@ class CoursesController extends Controller
 
             $slug = "";
             if (($request->slug == "") || $request->slug == null) {
-                $slug = str_slug($request->title);
+                $slug = Str::slug($request->title);
             } elseif ($request->slug != null) {
                 $slug = $request->slug;
             }
 
             $uniqueId = uniqid();
 
-            $course = Course::create($request->all());
+            if (!$request->category_id) {
+                $defaultCategory = Category::first();   // get any existing category
+                $request->merge(['category_id' => $defaultCategory->id]);
+                }
+                $course = Course::create($request->all());
+
             $course->slug = $uniqueId . '-' . $slug;
             $course->department_id = $request->department_id;
             $course->cms = $request->cms;
@@ -601,6 +609,17 @@ class CoursesController extends Controller
 
             $course->temp_id = $uniqueId;
             $course->save();
+
+            // Course created notification
+            try {
+                $notificationSettings = app(NotificationSettingsService::class);
+                if ($notificationSettings->shouldNotify('courses', 'course_created', 'email')) {
+                    CourseNotification::sendCourseCreatedEmail(\Auth::user(), $course);
+                    CourseNotification::createCourseCreatedBell(\Auth::user(), $course);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to send course created notification: ' . $e->getMessage());
+            }
 
             $course_id = $course->id;
 
@@ -745,6 +764,24 @@ class CoursesController extends Controller
 
             $course->teachers()->sync($teachers);
 
+            // Trainer assigned notification
+            try {
+                $notificationSettings = app(NotificationSettingsService::class);
+                if ($notificationSettings->shouldNotify('trainers', 'trainer_assigned', 'email')) {
+                    foreach ($teachers as $teacherId) {
+                        if ($teacherId != \Auth::id()) {
+                            $trainer = User::find($teacherId);
+                            if ($trainer) {
+                                CourseNotification::sendTrainerAssignedEmail($trainer, $course, \Auth::user());
+                                CourseNotification::createTrainerAssignedBell($trainer, $course, \Auth::user());
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to send trainer assigned notification: ' . $e->getMessage());
+            }
+
             $internalStudents = \Auth::user()->isAdmin() ? (array)$request->input('internalStudents') : [\Auth::user()->id];
             $externalStudents = \Auth::user()->isAdmin() ? (array)$request->input('externalStudents') : [\Auth::user()->id];
 
@@ -843,7 +880,7 @@ class CoursesController extends Controller
         
         $slug = "";
         if (($request->slug == "") || $request->slug == null) {
-            $slug = str_slug($request->title);
+            $slug = Str::slug($request->title);
         } elseif ($request->slug != null) {
             $slug = $request->slug;
         }
@@ -932,7 +969,7 @@ class CoursesController extends Controller
         $course->is_online = $request->course_type ?? 'Online';
 
         if (($request->slug == "") || $request->slug == null) {
-            $course->slug = str_slug($request->title);
+            $course->slug = Str::slug($request->title);
             $course->save();
         }
         if ((int)$request->price == 0) {
@@ -1198,6 +1235,18 @@ class CoursesController extends Controller
             }
         }
         $course->save();
+
+        // Course published/unpublished notification
+        try {
+            $notificationSettings = app(NotificationSettingsService::class);
+            if ($notificationSettings->shouldNotify('courses', 'course_published', 'email')) {
+                $isPublished = ($course->published == 1);
+                CourseNotification::sendCoursePublishedEmail(\Auth::user(), $course, $isPublished);
+                CourseNotification::createCoursePublishedBell(\Auth::user(), $course, $isPublished);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send course published notification: ' . $e->getMessage());
+        }
 
         return back()->withFlashSuccess(trans('alerts.backend.general.updated'));
     }

@@ -22,9 +22,11 @@ class UserAccessController extends Controller
      */
     public function loginAs(ManageUserRequest $request, User $user)
     {
-        if (! config('access.impersonation')) {
-            throw new GeneralException('The impersonation feature is currently disabled.');
-        }
+      abort_unless(
+          config('access.impersonation'),
+          403,
+          'The impersonation feature is currently disabled.'
+      );
 
         //dd($request->all());
         if(isset($user->employee_type)){
