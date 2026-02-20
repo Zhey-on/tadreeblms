@@ -46,10 +46,25 @@
 }
 </style>
 
+@php
+    $courseId = request()->get('course_id');
+@endphp
 
-@include('backend.includes.partials.course-steps', ['step' => 4, 'course_id' => $_GET['course_id'], 'course' => null])
+@if($courseId)
+    @include('backend.includes.partials.course-steps', [
+        'step' => 4,
+        'course_id' => $courseId,
+        'course' => null
+    ])
+@else
+    <div class="alert alert-info mt-3">
+        Please select a course to manage feedback questions.
+    </div>
+@endif
 
-{!! Form::open(['method' => 'POST', 'id' => 'addFeedbackQue', 'files' => true]) !!}
+
+<form method="POST" id="addFeedbackQue" enctype="multipart/form-data">
+@csrf
 <div class="text-center">
     <div class="pb-3">
 <div class="grow">
@@ -78,7 +93,9 @@
                     <option value=""> Select Course </option>
 
                     @foreach($courses as $row)
-                    <option value="{{ $row->id }}" @if(isset($_GET['course_id']) && ($_GET['course_id'] == $row->id)) selected="" @endif> {{ $row->title }} </option>
+                    <option value="{{ $row->id }}" @if($courseId == $row->id) selected @endif>
+                         {{ $row->title }}
+</option>
                     @endforeach
                 </select>
                 <span class="custom-select-icon">
@@ -98,21 +115,21 @@
     <div class="custom-select-wrapper mt-2">
         <select name="feedback_question_ids[]" class="form-control custom-select-box select2 js-example-questions-placeholder-multiple" multiple required>
             @foreach($questions as $id => $question)
-                <option value="{{ $id }}" @if(in_array($id, old('questions', []))) selected @endif>{{ $question }}</option>
+                <option value="1" @if(in_array($id, old('questions', []))) selected @endif>{{ $question }}</option>
             @endforeach
         </select>
         <span class="custom-select-icon">
             <i class="fa fa-chevron-down"></i>
         </span>
     </div></div></div>
-        <!-- <div class="col-12 mt-3">
+        {{-- <div class="col-12 mt-3">
             <div class=" form-control-label">
                 {!! Form::label('questions',trans('labels.backend.questions.fields.question'), ['class' => 'control-label']) !!}
             </div>
             <div class="mt-1">
             {!! Form::select('feedback_question_ids[]', $questions, old('questions'), ['class' => 'form-control select2 js-example-questions-placeholder-multiple', 'multiple' => 'multiple', 'required' => true]) !!}
             </div>
-        </div> -->
+        </div> --}}
         @endif
 <div class="mt-4">
         <div class="btmbtns mt-4">
@@ -121,11 +138,11 @@
                             <div class="d-flex justify-content-between">
 
                                 <div>
-      {!! Form::submit(trans('Done'), ['class' => 'btn  add-btn frm_submit','id'=>'doneBtn']) !!}
+      <input class="btn  add-btn frm_submit" id="doneBtn" type="submit" value="{{ trans('Done') }}">
                                 </div>
                                 <div class="">
     
-                                    {!! Form::submit(trans('Next'), ['class' => 'btn  cancel-btn frm_submit','id'=>'nextBtn']) !!}
+                                    <input class="btn  cancel-btn frm_submit" id="nextBtn" type="submit" value="{{ trans('Next') }}">
                                 </div>
                             </div>
 
@@ -138,20 +155,28 @@
 
         <!-- <div class="d-flex justify-content-end mt-4 row">
             <div class="col-6 col-md-6 d-flex form-group justify-content-center text-center">
-            {!! Form::submit(trans('Next'), ['class' => 'btn btn-lg btn-danger create_done next frm_submit','id'=>'nextBtn']) !!}
-            {!! Form::submit(trans('Done'), ['class' => 'btn btn-lg create_done frm_submit','id'=>'doneBtn']) !!}
+            {{-- {!! Form::submit(trans('Next'), ['class' => 'btn btn-lg btn-danger create_done next frm_submit','id'=>'nextBtn']) !!}
+            {!! Form::submit(trans('Done'), ['class' => 'btn btn-lg create_done frm_submit','id'=>'doneBtn']) !!} --}}
             
             </div>
         </div> -->
     </div>
-    <input type="hidden" id="final_index" value="{{ route('admin.assessment_accounts.final-submit', [$_GET['course_id']]) }}"> 
+  <!-- @if($courseId)
+    <input type="hidden" id="final_index" value="{{ route('admin.assessment_accounts.final-submit', [$courseId]) }}">
+@endif -->
+@if(!empty($courseId))
+    <input type="hidden" id="final_index" value="{{ route('admin.assessment_accounts.final-submit', [$courseId]) }}">
+@else
+    <input type="hidden" id="final_index" value="#">
+@endif
+
     <input type="hidden" id="feedback_index" value="{{ route('admin.feedback_question.index') }}">
 </div></div>
     </div>
 </div>
 
 
-{!! Form::close() !!}
+</form>
 @stop
 
 @push('after-scripts')
@@ -219,7 +244,7 @@ $(document).on('submit', '#addFeedbackQue', function (e) {
                     window.location.href = redirect_url;
                     return;
                 }
-                if(nxt_url_val = 'Done'){
+                if(nxt_url_val == 'Done'){
                     window.location.href = redirect_url_course;
                     return;
                 }

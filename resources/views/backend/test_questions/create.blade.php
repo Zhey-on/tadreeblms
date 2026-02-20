@@ -2,7 +2,8 @@
 @section('title', __('labels.backend.questions.title').' | '.app_name())
 
 @section('content')
-<!-- {!! Form::open(['method' => 'POST', 'route' => ['admin.questions.store'], 'files' => true,]) !!} -->
+<form method="POST" action="{{ route('admin.test_questions.store') }}" enctype="multipart/form-data">
+@csrf
 @push('after-styles')
 <style>
     :root {
@@ -368,7 +369,7 @@
         <div class="row">
     <div class="col-12 mt-5 buttons">
         
-     {!! Form::button('Save & Add More', ['class' => 'frm_submit add-btn', 'id'=>'save_and_add_more', 'value'=>'save_and_add_more']) !!}
+     <button type="button" class="frm_submit add-btn" id="save_and_add_more" value="save_and_add_more">Save & Add More</button>
     
      <span class="text-right pull-right">
         <button
@@ -394,7 +395,7 @@
 
 
 
-<!-- {!! Form::close() !!} -->
+</form>
 <script src="{{asset('ckeditor/ckeditor.js')}}" type="text/javascript"></script>
 <script type="text/javascript">
 
@@ -894,10 +895,7 @@ function removeOptions(pos) {
             alert('Please add at least 2 options');
             return;
         }
-        if (type != 3 && !options.some(opt => opt[1] === 1)) {
-            alert('Please select at least one correct answer');
-            return;
-        }
+       
 
         const data = {
             _token: "{{ csrf_token() }}",

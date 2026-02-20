@@ -8,6 +8,8 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Session\TokenMismatchException;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+// use App\Notifications\Backend\SystemNotification;
+// use App\Services\NotificationSettingsService;
 
 class Handler extends ExceptionHandler
 {
@@ -70,6 +72,13 @@ class Handler extends ExceptionHandler
             return redirect()
                 ->route(home_route())
                 ->withFlashDanger(__('auth.general_error'));
+        }
+
+        /* ✅ POST TOO LARGE ERROR */
+        if ($exception instanceof \Illuminate\Http\Exceptions\PostTooLargeException) {
+            return redirect()
+                ->back()
+                ->withFlashDanger(__('The uploaded file is too large. Please upload a smaller file.'));
         }
 
         return parent::render($request, $exception);
