@@ -19,5 +19,5 @@ jobs:
           script: |
             echo "Connected to staging"
             cd /var/www/html/stag/tadreeblms
-            git pull --ff-only origin staging
+            git pull --ff-only origin Staging
             echo "Staging deployment completed"
