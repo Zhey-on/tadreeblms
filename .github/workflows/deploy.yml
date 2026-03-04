@@ -23,4 +23,3 @@ jobs:
             git pull --ff-only
             php artisan migrate
 
-            echo "Deployment completed"
