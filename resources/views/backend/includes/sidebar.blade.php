@@ -754,6 +754,15 @@
                     </li>
                     @endif
 
+                    @if (!empty($enabledApps['google-meet']) && $enabledApps['google-meet'])
+                    <li class="nav-item">
+                        <a class="nav-link {{ active_class(Active::checkUriPattern('admin/external-apps/google-meet/configure')) }}"
+                            href="{{ route('admin.external-apps.edit-config', ['slug' => 'google-meet']) }}">
+                            <span class="title">Google Meet Configuration</span>
+                        </a>
+                    </li>
+                    @endif
+
                     @if (!empty($enabledApps['interactive-whiteboard']) && $enabledApps['interactive-whiteboard'])
                     <li class="nav-item">
                         <a class="nav-link {{ request()->is('external-apps/whiteboard/dashboard*') ? 'active' : '' }}"

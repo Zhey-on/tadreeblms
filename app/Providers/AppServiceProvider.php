@@ -21,6 +21,7 @@ use App\Resolvers\SocialUserResolver;
 use Coderello\SocialGrant\Resolvers\SocialUserResolverInterface;
 use App\Helpers\CustomHelper;
 use App\Services\NotificationSettingsService;
+use Illuminate\Support\Facades\File;
 
 /**
  * Class AppServiceProvider.
@@ -44,6 +45,26 @@ class AppServiceProvider extends ServiceProvider
         if (\Schema::hasTable('external_apps')) {
             $enabledApps = \App\Models\ExternalApp::where('is_enabled', 1)->pluck('is_enabled', 'slug')->toArray();
             \Cache::put('enabled_external_apps', $enabledApps, 3600); // cache for 1 hour
+        }
+
+        $modulesPath = base_path('modules');
+
+        if (!File::exists($modulesPath)) {
+            return;
+        }
+
+        foreach (File::directories($modulesPath) as $modulePath) {
+
+            $web = $modulePath . '/routes/web.php';
+            $api = $modulePath . '/routes/api.php';
+
+            if (File::exists($web)) {
+                require $web;
+            }
+
+            if (File::exists($api)) {
+                require $api;
+            }
         }
 
         if (app()->runningInConsole() 

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use ZipArchive;
-
+use Illuminate\Support\Facades\Artisan;
 class ExternalAppService
 {
     protected $appStoragePath;
@@ -435,6 +435,8 @@ class ExternalAppService
             // Run any installation commands if they exist
             $this->runInstallationCommands($installPath);
 
+            $this->runModuleMigrations($moduleName);
+
             // Refresh the sidebar cache so changes appear immediately
             $this->refreshEnabledAppsCache();
 
@@ -548,6 +550,29 @@ class ExternalAppService
 
         return $config;
     }
+
+    protected function runModuleMigrations(string $slug)
+    {
+        $moduleMigrationsPath = base_path("modules/{$slug}/database/migrations");
+        //dd($moduleMigrationsPath);
+
+        if (!file_exists($moduleMigrationsPath)) {
+            throw new \Exception("Migrations folder not found for module: $slug");
+        }
+
+        
+
+        // Run migrations
+        Artisan::call('migrate', [
+            '--path' => "modules/{$slug}/database/migrations",
+            '--force' => true, // force run in production
+        ]);
+
+        $output = Artisan::output();
+        //dd($output);
+        return $output;
+    }
+
 
     /**
      * Run installation commands from the module

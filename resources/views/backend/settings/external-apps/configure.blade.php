@@ -164,6 +164,38 @@
                             </div>
                         @endif
 
+                        @if ($app->slug === 'google-meet')
+                               
+                            <hr class="mt-4 mb-4">
+                            <div class="row mb-3">
+                                <div class="col text-left">
+                                    <a href="/google-meet/connect" class="btn btn-success">
+                                        <i class="fas fa-link mr-1"></i> Connect Google Account
+                                    </a>
+                                </div>
+                            </div>
+                            <hr class="mt-4 mb-4">
+                            <h5 class="mb-4 d-flex align-items-center">
+                                <i class="fas fa-video mr-2 text-danger"></i>
+                                Test Google Meet Integration
+                            </h5>
+
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Click below to generate a sample Google Meet link using saved OAuth tokens.
+                            </div>
+
+                            <div id="testGoogleMeetAlertContainer"></div>
+
+                            <div class="row">
+                                <div class="col text-left">
+                                    <button type="button" class="btn btn-danger" id="btnTestGoogleMeet">
+                                        <i class="fas fa-video mr-1"></i> Generate Test Meet Link
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+
                         <hr class="mt-4 mb-4">
 
                         <div class="row">
@@ -202,6 +234,83 @@ $(document).ready(function () {
         }
     });
 
+@if ($app->slug === 'google-meet')
+$('#btnTestGoogleMeet').on('click', function() {
+
+    var btn = $(this);
+    var btnHtml = btn.html();
+    var alertContainer = $('#testGoogleMeetAlertContainer');
+
+    alertContainer.empty();
+
+    btn.prop('disabled', true)
+       .html('<i class="fas fa-spinner fa-spin mr-1"></i> Generating...');
+
+    $.ajax({
+        url: '/google-meet/create-meeting',
+        type: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            title: 'Test Meeting from Admin Panel',
+            start_time: new Date(Date.now() + 5 * 60000).toISOString(),
+            end_time: new Date(Date.now() + 35 * 60000).toISOString()
+        },
+        success: function(response) {
+
+            if (response.meet_link) {
+
+                alertContainer.html(`
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Meet Link Generated Successfully:
+                        <br><br>
+                        <a href="${response.meet_link}" target="_blank">
+                            ${response.meet_link}
+                        </a>
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                `);
+
+            } else {
+                alertContainer.html(`
+                    <div class="alert alert-warning alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Meeting created but no Meet link returned.
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                `);
+            }
+
+            btn.prop('disabled', false).html(btnHtml);
+        },
+        error: function(xhr) {
+
+            var msg = 'Failed to generate Google Meet link.';
+
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                msg = xhr.responseJSON.error;
+            }
+
+            alertContainer.html(`
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    ${msg}
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            `);
+
+            btn.prop('disabled', false).html(btnHtml);
+        }
+    });
+
+});
+@endif
     @if ($app->slug === 'zoom')
     $('#btnTestConnection').on('click', function() {
         var btn = $(this);
