@@ -70,6 +70,33 @@
         border-color: #9C701E;
         color: #fff;
     }
+
+    .btn-export-feedback {
+        background: #1f7a45;
+        border: 1px solid #1f7a45;
+        color: #fff;
+        border-radius: 999px;
+        font-weight: 600;
+        padding: 0.42rem 1rem;
+    }
+
+    .btn-export-feedback:hover,
+    .btn-export-feedback:focus {
+        background: #186338;
+        border-color: #155a33;
+        color: #fff;
+    }
+
+    .btn-export-feedback-icon {
+        width: 14px;
+        height: 14px;
+        margin-right: 6px;
+        flex-shrink: 0;
+    }
+
+    .feedback-filter-actions {
+        gap: 10px;
+    }
 </style>
 @endpush
 
@@ -121,7 +148,13 @@
                           </div>
 
                           <div class="row mb-0">
-                              <div class="col-12 d-flex justify-content-end">
+                              <div class="col-12 d-flex justify-content-end feedback-filter-actions">
+                                  <a href="{{ route('admin.user-feedback-answers.export') }}" id="export-feedback-answers" class="btn btn-export-feedback">
+                                      <svg class="btn-export-feedback-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                          <path fill="currentColor" d="M3 1.5A1.5 1.5 0 0 1 4.5 0h4.879c.398 0 .779.158 1.06.44l2.621 2.62c.282.282.44.663.44 1.06V14.5A1.5 1.5 0 0 1 12 16H4.5A1.5 1.5 0 0 1 3 14.5zm6 0V4h2.5zM5.47 6.97a.75.75 0 1 0-1.06 1.06L5.94 9.56l-1.53 1.53a.75.75 0 1 0 1.06 1.06L7 10.62l1.53 1.53a.75.75 0 0 0 1.06-1.06L8.06 9.56l1.53-1.53a.75.75 0 0 0-1.06-1.06L7 8.5z"/>
+                                      </svg>
+                                      Download as Excel
+                                  </a>
                                   <button type="button" id="reset-filters" class="btn btn-reset-filters">Reset Filters</button>
                               </div>
                           </div>
@@ -171,6 +204,41 @@
     <script>
         $(document).ready(function() {
             let isResettingFilters = false;
+            const exportBaseUrl = '{{ route("admin.user-feedback-answers.export") }}';
+
+            const appendArrayParams = function (params, key, values) {
+                if (!Array.isArray(values)) {
+                    return;
+                }
+
+                values.filter(Boolean).forEach(function (value) {
+                    params.append(key + '[]', value);
+                });
+            };
+
+            const updateExportUrl = function () {
+                const params = new URLSearchParams();
+                const searchValue = $('#myTable_filter input[type="search"]').val();
+
+                appendArrayParams(params, 'course_ids', $('#filter_course_ids').val() || []);
+                appendArrayParams(params, 'user_ids', $('#filter_user_ids').val() || []);
+
+                if ($('#filter_date_from').val()) {
+                    params.set('date_from', $('#filter_date_from').val());
+                }
+
+                if ($('#filter_date_to').val()) {
+                    params.set('date_to', $('#filter_date_to').val());
+                }
+
+                if (searchValue) {
+                    params.set('search', searchValue);
+                }
+
+                const queryString = params.toString();
+
+                $('#export-feedback-answers').attr('href', queryString ? exportBaseUrl + '?' + queryString : exportBaseUrl);
+            };
 
             const dtTable = $('#myTable').DataTable({
                 processing: true,
@@ -250,7 +318,12 @@
                     .wrap('<div class="search-wrapper position-relative d-inline-block"></div>')
                     .after('<i class="fa fa-search search-icon"></i>');
 
+                $searchInput.on('input', function () {
+                    updateExportUrl();
+                });
+
                 $('#myTable_length select').addClass('form-select form-select-sm custom-entries');
+                updateExportUrl();
                 },
                  drawCallback: function () {
     $('.dataTables_paginate .paginate_button.previous, .dataTables_paginate .paginate_button.next').css({
@@ -299,6 +372,7 @@
                     return;
                 }
 
+                updateExportUrl();
                 dtTable.draw();
             });
 
@@ -311,6 +385,7 @@
                 $('#filter_date_to').val('');
 
                 isResettingFilters = false;
+                updateExportUrl();
                 dtTable.draw();
             });
 
