@@ -582,6 +582,12 @@ class AssessmentAccountsController extends Controller
         }
 
         $course = Course::find($single_course_id);
+        if (!$course) {
+            return redirect()->back()->withFlashDanger('Course not found.');
+        }
+        if ($course->expire_at && \Carbon\Carbon::parse($course->expire_at)->isPast()) {
+            return redirect()->back()->withFlashDanger('Enrollment is not allowed: this course has already expired.');
+        }
         $course_link = url("/course/$course->slug");
 
         $users = [];
@@ -763,6 +769,9 @@ class AssessmentAccountsController extends Controller
 
         if (!$course) {
             return response()->json(['error' => 'Course not found'], 404);
+        }
+        if ($course->expire_at && \Carbon\Carbon::parse($course->expire_at)->isPast()) {
+            return response()->json(['error' => 'Enrollment is not allowed: this course has already expired.'], 422);
         }
 
         $course_link = url("/course/$course->slug");
