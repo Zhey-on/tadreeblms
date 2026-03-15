@@ -2,9 +2,75 @@
 @extends('backend.layouts.app')
 @section('title', __('User Feedback Answers') . ' | ' . app_name())
 @push('after-styles')
- <style>
-      
-    </style>
+<style>
+    .feedback-filters {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .feedback-filters-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .feedback-filters .control-label {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #4b5563;
+        margin-bottom: 6px;
+    }
+
+    .feedback-filters .form-control,
+    .feedback-filters .select2-container--default .select2-selection--single,
+    .feedback-filters .select2-container--default .select2-selection--multiple {
+        border: 1px solid #cfd8e3;
+        border-radius: 10px;
+        min-height: 42px;
+    }
+
+    .feedback-filters .select2-container--default .select2-selection--multiple {
+        padding: 4px 8px;
+    }
+
+    .feedback-filters .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background: #e8f1ff;
+        border: 1px solid #b7d2ff;
+        color: #1d4ed8;
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    .feedback-filters .form-control:focus,
+    .feedback-filters .select2-container--default.select2-container--focus .select2-selection--single,
+    .feedback-filters .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+    }
+
+    .btn-reset-filters {
+        background: #C1902D;
+        border: 1px solid #C1902D;
+        color: #fff;
+        border-radius: 999px;
+        font-weight: 600;
+        padding: 0.42rem 1rem;
+    }
+
+    .btn-reset-filters:hover,
+    .btn-reset-filters:focus {
+        background: #A67921;
+        border-color: #9C701E;
+        color: #fff;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -19,6 +85,48 @@
                       <h3 class="page-title d-inline">@lang('User Feedback Answer')</h3>
                   </div> -->
                   <div class="card-body">
+                      <div class="feedback-filters">
+                          <div class="d-flex align-items-center mb-3">
+                              <h5 class="feedback-filters-title mb-0">Filters</h5>
+                          </div>
+
+                          <div class="row mb-2">
+                              <div class="col-12 col-lg-4 form-group">
+                                  <label for="filter_course_ids" class="control-label">Courses</label>
+                                  <select name="filter_course_ids[]" id="filter_course_ids" class="form-control custom-select-box js-example-placeholder-courses select2" multiple>
+                                      @foreach($courses as $courseId => $courseName)
+                                          <option value="{{ $courseId }}">{{ $courseName }}</option>
+                                      @endforeach
+                                  </select>
+                              </div>
+
+                              <div class="col-12 col-lg-4 form-group">
+                                  <label for="filter_user_ids" class="control-label">Users</label>
+                                  <select name="filter_user_ids[]" id="filter_user_ids" class="form-control custom-select-box js-example-placeholder-multiple select2" multiple>
+                                      @foreach($users as $userId => $userName)
+                                          <option value="{{ $userId }}">{{ $userName }}</option>
+                                      @endforeach
+                                  </select>
+                              </div>
+
+                              <div class="col-6 col-lg-2 form-group">
+                                  <label for="filter_date_from" class="control-label">From Date</label>
+                                  <input type="date" id="filter_date_from" class="form-control" autocomplete="off">
+                              </div>
+
+                              <div class="col-6 col-lg-2 form-group">
+                                  <label for="filter_date_to" class="control-label">To Date</label>
+                                  <input type="date" id="filter_date_to" class="form-control" autocomplete="off">
+                              </div>
+                          </div>
+
+                          <div class="row mb-0">
+                              <div class="col-12 d-flex justify-content-end">
+                                  <button type="button" id="reset-filters" class="btn btn-reset-filters">Reset Filters</button>
+                              </div>
+                          </div>
+                      </div>
+
                       <div class="">
                           <table id="myTable"
                               class="table dt-select custom-teacher-table table-striped @can('lesson_delete') @if (request('show_deleted') != 1) dt-select @endif @endcan">
@@ -62,7 +170,8 @@
     <script src="{{ asset('js/modal/confirm-modal.js') }}"></script>
     <script>
         $(document).ready(function() {
-            let course_id;
+            let isResettingFilters = false;
+
             const dtTable = $('#myTable').DataTable({
                 processing: true,
                 serverSide: true,
@@ -94,7 +203,10 @@
                         $("#loader").addClass("d-none");
                     },
                     data: function(d) {
-                        d.course_id = course_id; // Pass the course_id parameter to the server
+                        d.course_ids = $('#filter_course_ids').val();
+                        d.user_ids = $('#filter_user_ids').val();
+                        d.date_from = $('#filter_date_from').val();
+                        d.date_to = $('#filter_date_to').val();
                     }
                 },
                 columns: [{
@@ -168,6 +280,38 @@
         'font-weight': 'bold'
     });
 },
+            });
+
+            $(".js-example-placeholder-courses").select2({
+                placeholder: "Select courses",
+                allowClear: true,
+                width: "100%"
+            });
+
+            $(".js-example-placeholder-multiple").select2({
+                placeholder: "Select users",
+                allowClear: true,
+                width: "100%"
+            });
+
+            $('#filter_course_ids, #filter_user_ids, #filter_date_from, #filter_date_to').on('change', function () {
+                if (isResettingFilters) {
+                    return;
+                }
+
+                dtTable.draw();
+            });
+
+            $(document).on('click', '#reset-filters', function () {
+                isResettingFilters = true;
+
+                $('#filter_course_ids').val(null).trigger('change');
+                $('#filter_user_ids').val(null).trigger('change');
+                $('#filter_date_from').val('');
+                $('#filter_date_to').val('');
+
+                isResettingFilters = false;
+                dtTable.draw();
             });
 
         });
