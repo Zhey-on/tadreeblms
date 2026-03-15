@@ -78,6 +78,12 @@
         border-radius: 999px;
         font-weight: 600;
         padding: 0.42rem 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        line-height: 1.2;
+        white-space: nowrap;
     }
 
     .btn-export-feedback:hover,
@@ -88,9 +94,9 @@
     }
 
     .btn-export-feedback-icon {
-        width: 14px;
-        height: 14px;
-        margin-right: 6px;
+        width: 18px;
+        height: 18px;
+        display: block;
         flex-shrink: 0;
     }
 
@@ -150,10 +156,11 @@
                           <div class="row mb-0">
                               <div class="col-12 d-flex justify-content-end feedback-filter-actions">
                                   <a href="{{ route('admin.user-feedback-answers.export') }}" id="export-feedback-answers" class="btn btn-export-feedback">
-                                      <svg class="btn-export-feedback-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                                          <path fill="currentColor" d="M3 1.5A1.5 1.5 0 0 1 4.5 0h4.879c.398 0 .779.158 1.06.44l2.621 2.62c.282.282.44.663.44 1.06V14.5A1.5 1.5 0 0 1 12 16H4.5A1.5 1.5 0 0 1 3 14.5zm6 0V4h2.5zM5.47 6.97a.75.75 0 1 0-1.06 1.06L5.94 9.56l-1.53 1.53a.75.75 0 1 0 1.06 1.06L7 10.62l1.53 1.53a.75.75 0 0 0 1.06-1.06L8.06 9.56l1.53-1.53a.75.75 0 0 0-1.06-1.06L7 8.5z"/>
+                                      <svg class="btn-export-feedback-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false" fill="none">
+                                          <path d="M7.25 2.25h5.1L16 5.9v10.6a1.25 1.25 0 0 1-1.25 1.25h-7.5A1.25 1.25 0 0 1 6 16.5V3.5a1.25 1.25 0 0 1 1.25-1.25Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                                          <path d="M12.25 2.5V5.75H15.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                       </svg>
-                                      Download as Excel
+                                      <span>Download as Excel</span>
                                   </a>
                                   <button type="button" id="reset-filters" class="btn btn-reset-filters">Reset Filters</button>
                               </div>
