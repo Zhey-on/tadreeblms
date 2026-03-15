@@ -50,10 +50,19 @@
 <div class="pb-3 d-flex justify-content-between align-items-center">
         <h4 class="">Enrolled Trainee [{{ CustomHelper::getCourseName($course_id); }}]</h4>
     @can('course_create')
+        @php
+            $courseExpired = isset($course) && $course->expire_at && \Carbon\Carbon::parse($course->expire_at)->isPast();
+        @endphp
         <div class="">
-            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#enrollUsersModal">
-                + Enroll Users
-            </button>
+            @if ($courseExpired)
+                <button type="button" class="btn btn-secondary" disabled title="This course has expired. Enrollment is not allowed.">
+                    + Enroll Users
+                </button>
+            @else
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#enrollUsersModal">
+                    + Enroll Users
+                </button>
+            @endif
         </div>
     @endcan
 </div>
