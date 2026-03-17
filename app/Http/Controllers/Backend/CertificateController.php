@@ -130,29 +130,16 @@ class CertificateController extends Controller
 
     public function generateCertificate(Request $request)
     {
-        //dd("uu");
-        $user_id = \Auth::id();
         $course_id = $request->course_id;
-
-        $course = Course::whereHas('students', function ($query) {
-            $query->where('id', \Auth::id());
-        })
-            ->where('id', '=', $course_id);
-
-        $course = $course->first();
         $user_id = $request->user_id ?? auth()->id();
-
-        
 
         $subscribed_course = SubscribeCourse::where(['course_id' => $course_id, 'user_id' => $user_id, 'is_completed' => 1])->firstOrFail();
 
-        //dd($subscribed_course);
-
         $course = $subscribed_course->course;
-
-        $user = User::find($user_id);
-
-        //dd($course->grantCertificate($user_id));
+        if (!$course) {
+            return abort(404);
+        }
+        $user = User::findOrFail($user_id);
 
         if ($course->grantCertificate($user_id)) {
             $certificate = Certificate::firstOrCreate([
@@ -160,8 +147,11 @@ class CertificateController extends Controller
                 'course_id' => $request->course_id
             ]);
 
-           // $date = $certificate->created_at->format('Y-m-d');
-            $date = $subscribed_course->completed_at->format('Y-m-d');
+            $completedAt = $subscribed_course->completed_at ?: $subscribed_course->updated_at ?: Carbon::now();
+            $date = Carbon::parse($completedAt)->format('Y-m-d');
+
+            $stampPath = public_path('certificate/assets/stamp.jpg');
+            $backgroundPath = public_path('certificate/assets/delta-lines-bg.png');
 
             $qrCode = QrCode::size(100)->generate(url("/certificate-verification?name=$user->name&date=$date"));
             $base64QrCode = base64_encode($qrCode);
@@ -170,8 +160,8 @@ class CertificateController extends Controller
                 'name' => $user->name,
                 'course_name' => $course->title,
                 'date' => Carbon::parse($date)->format('d M, Y'),
-                'stamp' => base64_encode(file_get_contents('certificate/assets/stamp.jpg')),
-                'background' => base64_encode(file_get_contents('certificate/assets/delta-lines-bg.png')),
+                'stamp' => is_readable($stampPath) ? base64_encode(file_get_contents($stampPath)) : '',
+                'background' => is_readable($backgroundPath) ? base64_encode(file_get_contents($backgroundPath)) : '',
                 'qr' => $base64QrCode,
             ];
 

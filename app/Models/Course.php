@@ -521,7 +521,12 @@ public function getExpiryDateAttribute($input)
 
     public function assignmentScorePercentage($user_id)
     {
-        $course_test_ids = Test::where('course_id', $this->id)->pluck('id')->toArray();
+        $course_test_ids = Test::where('course_id', $this->id)
+            ->where(function ($q) {
+                $q->whereNull('lesson_id')->orWhere('lesson_id', 0);
+            })
+            ->pluck('id')
+            ->toArray();
         
         $test_questions = TestQuestion::whereIn('test_id', $course_test_ids)->pluck('id')->toArray();
         //dd($course_test_ids, $test_questions);
@@ -578,7 +583,12 @@ public function getExpiryDateAttribute($input)
         }
         
 
-        $course_test_ids = Test::where('course_id', $this->id)->pluck('id')->toArray();
+        $course_test_ids = Test::where('course_id', $this->id)
+            ->where(function ($q) {
+                $q->whereNull('lesson_id')->orWhere('lesson_id', 0);
+            })
+            ->pluck('id')
+            ->toArray();
 
         //dd( $course_test_ids , $this->id );
 

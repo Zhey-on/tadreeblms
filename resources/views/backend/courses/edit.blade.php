@@ -309,7 +309,6 @@
 </div>
 
                     </div>
-                @endif
 
             <!-- <div class="row">
                         <label class="col-md-2 form-control-label" for="first_name">Select Department</label>
