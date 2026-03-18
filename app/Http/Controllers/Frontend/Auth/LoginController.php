@@ -40,8 +40,6 @@ class LoginController extends Controller
             return '/admin/dashboard';
         }
 
-        //dd("kk");
-
         return route(home_route());
     }
 
@@ -52,30 +50,31 @@ class LoginController extends Controller
     {
         if (request()->ajax()) {
             $captcha_string = CustomHelper::getCaptcha();
+
             return [
                 'socialLinks' => (new Socialite)->getSocialLinks(),
                 'captcha' => $captcha_string,
                 'captcha_question' => $captcha_string,
-                'captha' => $captcha_string // keep for backward compatibility if any
+                'captha' => $captcha_string, // backward compatibility
             ];
         }
 
         $captcha_string = CustomHelper::getCaptcha();
 
         return view('frontend.auth.login', [
-            'captha' => $captcha_string
+            'captha' => $captcha_string,
         ]);
     }
+
     public function refreshCaptcha()
     {
         $captcha = CustomHelper::getCaptcha();
 
         return response()->json([
             'captcha' => $captcha,
-            'captcha_question' => $captcha
+            'captcha_question' => $captcha,
         ]);
     }
-
 
     /**
      * Get login username field
@@ -109,7 +108,7 @@ class LoginController extends Controller
             ], 422);
         }
 
-        // ✅ CAPTCHA CHECK
+        // CAPTCHA CHECK
         if ((int) $request->captcha !== (int) Session::get('captcha_answer')) {
             return response([
                 'success' => false,
@@ -147,9 +146,8 @@ class LoginController extends Controller
 
         $ldap_toggle = Config::where('key', 'ldap_toggle')->value('value') ?? 0;
 
-        if($ldap_toggle) {
+        if ($ldap_toggle) {
             try {
-                // ✅ Get the LDAP user first
                 $ldapUser = LdapUser::query()
                     ->where('mail', '=', $request->email)
                     ->first();
@@ -163,7 +161,6 @@ class LoginController extends Controller
 
                 $dn = $ldapUser->getDn();
 
-                //CORRECT way to authenticate with LDAPRecord
                 $auth = Container::getInstance()
                     ->getConnection('default')
                     ->auth()
@@ -176,18 +173,16 @@ class LoginController extends Controller
                     ], Response::HTTP_FORBIDDEN);
                 }
 
-                //Create or sync user in LMS database
                 $user = User::updateOrCreate(
                     ['email' => $request->email],
                     [
                         'first_name' => $ldapUser->getFirstAttribute('cn'),
-                        'password' => bcrypt(Str::random(16)), // dummy local password
+                        'password' => bcrypt(Str::random(16)),
                     ]
                 );
 
                 $user->assignRole('student');
 
-                // Log user into Laravel
                 LaravelAuth::login($user, $request->has('remember'));
 
                 $redirect = route('admin.dashboard');
@@ -201,10 +196,8 @@ class LoginController extends Controller
                     'success' => false,
                     'message' => 'LDAP Error: ' . $e->getMessage(),
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
-            } 
+            }
         }
-        
-
 
         return response([
             'success' => false,
@@ -218,7 +211,6 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
-        // Confirmation & active checks
         if (! $user->isConfirmed()) {
             auth()->logout();
             throw new GeneralException(__('exceptions.frontend.auth.confirmation.pending'));
@@ -229,7 +221,6 @@ class LoginController extends Controller
             throw new GeneralException(__('exceptions.frontend.auth.deactivated'));
         }
 
-        // Session values by employee type
         if (isset($user->employee_type)) {
             if (empty($user->employee_type)) {
                 Session::put('setvaluesession', 1);
@@ -245,7 +236,6 @@ class LoginController extends Controller
             }
         }
 
-        // Update login stats
         $user->update([
             'last_login_at' => Carbon::now()->toDateTimeString(),
             'last_login_ip' => $request->getClientIp(),
@@ -258,7 +248,6 @@ class LoginController extends Controller
                 ->clearSessionExceptCurrent($user);
         }
 
-        // Final redirect logic
         if ($user->isAdmin()) {
             return redirect('/admin/dashboard');
         }
