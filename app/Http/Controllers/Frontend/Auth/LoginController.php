@@ -50,29 +50,30 @@ class LoginController extends Controller
      */
     public function showLoginForm()
     {
-
-
         if (request()->ajax()) {
-            $captha_string = CustomHelper::getCaptcha();
+            $captcha_string = CustomHelper::getCaptcha();
             return [
                 'socialLinks' => (new Socialite)->getSocialLinks(),
-                'captha' => $captha_string
+                'captcha' => $captcha_string,
+                'captcha_question' => $captcha_string,
+                'captha' => $captcha_string // keep for backward compatibility if any
             ];
         }
 
-        $captha_string = CustomHelper::getCaptcha();
+        $captcha_string = CustomHelper::getCaptcha();
 
         return view('frontend.auth.login', [
-            'captha' => $captha_string
+            'captha' => $captcha_string
         ]);
     }
     public function refreshCaptcha()
     {
         $captcha = CustomHelper::getCaptcha();
 
-    return response()->json([
-        'captcha' => $captcha
-    ]);
+        return response()->json([
+            'captcha' => $captcha,
+            'captcha_question' => $captcha
+        ]);
     }
 
 
