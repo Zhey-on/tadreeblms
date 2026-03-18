@@ -439,6 +439,11 @@ class ConfigController extends Controller
         return back();
     }
 
+    public function getCertificateTemplateSettings()
+    {
+        return view('backend.settings.certificate-template');
+    }
+
     public function getZoomSettings()
     {
         if (!auth()->user()->isAdmin()) {
