@@ -125,8 +125,8 @@
     </div> -->
 
     <div class="card-body">
-        <div class = "lesson-template ">
-            <div class="position-relative lesson-box">
+        <div class = "lesson-template">
+            <div class="position-relative lesson-box" data-lesson-index="0">
 
     <i class="fa fa-times remove_less_slug"
    onclick="removeLesslug(this)"
@@ -291,10 +291,10 @@ Add Video
 <div class="video-item card p-3 mb-3">
 
 <label>Video Title</label>
-<input type="text" name="videos[INDEX][title]" class="form-control">
+<input type="text" name="videos[L_INDEX][V_INDEX][title]" class="form-control">
 
 <label>Type</label>
-<select name="videos[INDEX][type]" class="form-control video-type">
+<select name="videos[L_INDEX][V_INDEX][type]" class="form-control video-type">
 <option value="upload">Upload</option>
 <option value="youtube">YouTube</option>
 <option value="vimeo">Vimeo</option>
@@ -303,16 +303,16 @@ Add Video
 
 <div class="video-url mt-2">
 <label>Video URL</label>
-<input type="text" name="videos[INDEX][url]" class="form-control">
+<input type="text" name="videos[L_INDEX][V_INDEX][url]" class="form-control">
 </div>
 
 <div class="video-file mt-2">
 <label>Upload File</label>
-<input type="file" name="videos[INDEX][file]" class="form-control">
+<input type="file" name="videos[L_INDEX][V_INDEX][file]" class="form-control">
 </div>
 
 <label class="mt-2">
-<input type="checkbox" name="videos[INDEX][is_preview]" value="1">
+<input type="checkbox" name="videos[L_INDEX][V_INDEX][is_preview]" value="1">
  Preview Video
 </label>
 
@@ -447,22 +447,38 @@ function initEditors(container){
 
 }
 
-window.videoIndex = window.videoIndex || 0;
+window.videoCounts = window.videoCounts || {0: 0};
 $(document).on('click','#addVideo',function(){
+    let $lessonBox = $(this).closest('.lesson-box');
+    let lessonIndex = $lessonBox.data('lesson-index');
+    
+    if (window.videoCounts[lessonIndex] === undefined) {
+        window.videoCounts[lessonIndex] = $lessonBox.find('.video-item').length;
+    }
 
     let template = $('.video-template').html();
+    template = template.replace(/L_INDEX/g, lessonIndex);
+    template = template.replace(/V_INDEX/g, window.videoCounts[lessonIndex]);
 
-    template = template.replace(/INDEX/g, videoIndex);
-
-    $(this).siblings('#videos-wrapper').append(template);
-
-    videoIndex++;
-
+    $lessonBox.find('#videos-wrapper').append(template);
+    window.videoCounts[lessonIndex]++;
 });
 
 $(document).on('click','.removeVideo',function(){
-
     $(this).closest('.video-item').remove();
+});
+
+$(document).on('change', '.video-type', function () {
+    let type = $(this).val();
+    let $videoItem = $(this).closest('.video-item');
+
+    if (type === 'upload') {
+        $videoItem.find('.video-url').hide();
+        $videoItem.find('.video-file').show();
+    } else {
+        $videoItem.find('.video-url').show();
+        $videoItem.find('.video-file').hide();
+    }
 });
 </script>
 <script>
@@ -606,9 +622,15 @@ $(document).ready(function(){
 </script>
 
 <script>
+    let lessonCount = $('.lesson-box').length;
     $("#addmorebtn").on('click', function () {
 
     let clone = $('.lesson-template').first().clone(false);
+    let newIndex = lessonCount;
+    
+    clone.find('.lesson-box').attr('data-lesson-index', newIndex);
+    window.videoCounts[newIndex] = 0;
+    clone.find('#videos-wrapper').empty();
 
     clone.find('input, textarea').val('');
     clone.find('input[type="checkbox"]').prop('checked', false);
@@ -627,6 +649,7 @@ clone.find('.editor').each(function () {
     clone.find('.remove_less_slug').show();
 
     $(".mo_create").append(clone);
+    lessonCount++;
 
       initEditors(clone);
 
