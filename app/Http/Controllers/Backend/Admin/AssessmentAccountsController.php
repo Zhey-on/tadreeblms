@@ -812,6 +812,10 @@ public function courseAssignment(Request $request)
             return response()->json(['error' => 'Course not found'], 404);
         }
 
+        if ($course->expire_at && \Carbon\Carbon::parse($course->expire_at)->isPast()) {
+            return response()->json(['error' => 'Cannot enroll users into an expired course.'], 422);
+        }
+
         $course_link = url("/course/$course->slug");
 
         $users = [];

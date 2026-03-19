@@ -720,6 +720,7 @@ class EmployeeController extends Controller
 
     public function enrolled_student($course_id)
     {
+        $course = Course::findOrFail($course_id);
         $already_enrolled_ids = SubscribeCourse::where('course_id', $course_id)
             ->pluck('user_id')
             ->toArray();
@@ -734,7 +735,7 @@ class EmployeeController extends Controller
 
         $departments = Department::all();
 
-        return view('backend.employee.enrolled_employee', compact('course_id', 'teachers', 'departments'));
+        return view('backend.employee.enrolled_employee', compact('course_id', 'teachers', 'departments', 'course'));
     }
 
 
